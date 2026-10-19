@@ -11,7 +11,8 @@
     "seed": "ts-node src/db/seed.ts",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
-    "codigo-inicial": "ts-node src/scripts/codigo-inicial.ts"
+    "codigo-inicial": "ts-node src/scripts/codigo-inicial.ts",
+    "cadastrar-aparelho": "ts-node src/scripts/cadastrar-aparelho.ts"
   },
   "jest": {
     "preset": "ts-jest",

@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Endereça",
+    "slug": "endereca",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "br.com.endereca.repositor",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O Endereça usa a câmera para ler o QR Code e o código de barras dos produtos."
+        }
+      ],
+      "expo-secure-store",
+      "expo-asset"
+    ],
+    "extra": {
+      "apiUrl": "http://10.0.2.2:3000"
+    }
+  }
+}
