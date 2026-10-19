@@ -3,17 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { criarApp } from '../src/app';
-import { Config } from '../src/config';
 import { aplicarMigracoes } from '../src/db/migrate';
 import { emitirCodigo } from '../src/lider/emitir-codigo';
 import { hojeNaLoja } from '../src/produtos/indicadores';
+import { configTeste, TABELAS } from './ambiente';
 
-const config: Config = {
-  databaseUrl: process.env.TEST_DATABASE_URL ?? 'postgres://postgres@127.0.0.1:5433/endereca_test',
-  jwtSecret: 'segredo-de-teste',
-  rhApiKey: 'chave-rh-teste',
-  port: 0,
-};
+const config = configTeste;
 
 const APARELHO = 'APARELHO-L1';
 const APARELHO_L2 = 'APARELHO-L2';
@@ -59,12 +54,11 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await pool.query(`TRUNCATE lojas, colaboradores, aparelhos, codigos_ativacao, tentativas_acesso, avisos_lider, auditoria,
-    produtos, enderecos_produto, vendas_diarias, lotes_produto, apreciacao_produto CASCADE`);
+  await pool.query(`TRUNCATE ${TABELAS} CASCADE`);
   const res = await sincronizarRh([
-    { matricula: '001000', nome: 'Marcos Teixeira', lojaId: 'L1', papel: 'lider', ativo: true },
-    { matricula: '004512', nome: 'Carla Mendes', lojaId: 'L1', papel: 'repositor', ativo: true },
-    { matricula: '007001', nome: 'Ivo Ramos', lojaId: 'L1', papel: 'repositor', ativo: true },
+    { matricula: '001000', nome: 'Marcos Teixeira', lojaId: 'L1', papel: 'lider', setor: 'Mercearia', ativo: true },
+    { matricula: '004512', nome: 'Carla Mendes', lojaId: 'L1', papel: 'repositor', setor: 'Mercearia', ativo: true },
+    { matricula: '007001', nome: 'Ivo Ramos', lojaId: 'L1', papel: 'repositor', setor: 'Mercearia', ativo: true },
     { matricula: '009000', nome: 'Paula Reis', lojaId: 'L2', papel: 'lider', ativo: true },
   ]);
   expect(res.body).toEqual({ novos: 4, atualizados: 0, desligados: 0 });

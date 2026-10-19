@@ -8,12 +8,15 @@ import { aplicarMigracoes } from './migrate';
 
 const LOJA = { id: 'L001', nome: 'Loja de demonstração' };
 
-const COLABORADORES: [string, string, string][] = [
-  ['001000', 'Marcos Teixeira', 'lider'],
-  ['004512', 'Carla Mendes', 'repositor'],
-  ['003871', 'Bruno Lima', 'repositor'],
-  ['005093', 'Ana Souza', 'repositor'],
-  ['007001', 'Ivo Ramos', 'repositor'],
+const COLABORADORES: [string, string, string, string | null][] = [
+  ['000100', 'Rita Albuquerque', 'gerente', null],
+  ['001000', 'Marcos Teixeira', 'lider', 'Mercearia'],
+  ['002000', 'Sueli Prado', 'lider', 'Padaria'],
+  ['004512', 'Carla Mendes', 'repositor', 'Mercearia'],
+  ['003871', 'Bruno Lima', 'repositor', 'Bebidas'],
+  ['005093', 'Ana Souza', 'repositor', 'Limpeza'],
+  ['007001', 'Ivo Ramos', 'repositor', 'Mercearia'],
+  ['008001', 'Davi Nogueira', 'repositor', 'Padaria'],
 ];
 
 const PRODUTOS = [
@@ -34,8 +37,8 @@ async function semear() {
     await aplicarMigracoes(pool);
     await pool.query('INSERT INTO lojas (id, nome) VALUES ($1, $2) ON CONFLICT DO NOTHING', [LOJA.id, LOJA.nome]);
     await pool.query("INSERT INTO aparelhos (id, loja_id, descricao) VALUES ('APARELHO-DEMO-01', $1, 'Celular de demonstração') ON CONFLICT DO NOTHING", [LOJA.id]);
-    for (const [matricula, nome, papel] of COLABORADORES) {
-      await pool.query('INSERT INTO colaboradores (matricula, nome, loja_id, papel) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', [matricula, nome, LOJA.id, papel]);
+    for (const [matricula, nome, papel, setor] of COLABORADORES) {
+      await pool.query('INSERT INTO colaboradores (matricula, nome, loja_id, papel, setor) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING', [matricula, nome, LOJA.id, papel, setor]);
     }
 
     const hoje = hojeNaLoja();
@@ -51,7 +54,7 @@ async function semear() {
       }
       await pool.query('INSERT INTO apreciacao_produto (sku, loja_id, nota) VALUES ($1, $2, $3) ON CONFLICT (sku, loja_id) DO UPDATE SET nota = EXCLUDED.nota', [p.sku, LOJA.id, p.nota]);
     }
-    console.log('Dados de demonstração gravados. Gere o código do líder com: npm run codigo-inicial -- 001000');
+    console.log('Dados de demonstração gravados. Gere o código da gerente com: npm run codigo-inicial -- 000100');
   } finally {
     await pool.end();
   }

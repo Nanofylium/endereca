@@ -1,8 +1,8 @@
 # Endereça
 
-App interno para lojas de atacarejo: o repositor escaneia o QR Code ou o código de barras e descobre onde o produto está, na área de venda (endereços R-) e no estoque (depósito, caixaria, gaveta, intermédio, aéreo). O líder acompanha a equipe e libera os acessos.
+App interno para lojas de atacarejo: o repositor escaneia o QR Code ou o código de barras e descobre onde o produto está, na área de venda (endereços R-) e no estoque (depósito, caixaria, gaveta, intermédio, aéreo). O líder acompanha a equipe do seu setor e o gerente operacional acompanha a loja inteira.
 
-O repositório tem a API (`apps/api`) e o app do repositor para Android (`apps/mobile`). O painel do líder vem na próxima etapa.
+O repositório tem a API (`apps/api`), o app do repositor para Android (`apps/mobile`) e o painel web do líder e do gerente (`apps/painel`).
 
 ## Como o acesso funciona
 
@@ -13,7 +13,11 @@ O repositório tem a API (`apps/api`) e o app do repositor para Android (`apps/m
 - **Bloqueio.** Três tentativas erradas na mesma matrícula, ou cinco no mesmo aparelho, bloqueiam por 15 minutos e geram aviso para o líder.
 - **Desligamento.** Quando o RH envia `ativo: false`, a matrícula é desativada, os códigos pendentes vencem e todas as sessões abertas caem.
 
-O primeiro líder de uma loja nova recebe o código pela TI, direto no servidor: `npm run codigo-inicial -- <matricula>`.
+## Papéis
+
+O RH envia o papel e o setor de cada pessoa. O **líder** vê e libera só os repositores do próprio setor (Mercearia, Padaria, Bebidas...). O **gerente operacional** vê a loja inteira, libera líderes e repositores de qualquer setor e bloqueia aparelhos. Ninguém libera o próprio acesso, e uma mudança de papel no RH vale na chamada seguinte.
+
+O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor: `npm run codigo-inicial -- <matricula>`.
 
 ## Rotas
 
@@ -21,11 +25,16 @@ O primeiro líder de uma loja nova recebe o código pela TI, direto no servidor:
 | --- | --- |
 | `POST /rh/sincronizar` | Sistema do RH (chave `x-rh-api-key`) |
 | `POST /acesso/ativar` | Repositor no primeiro acesso |
-| `POST /acesso/entrar` | Repositor e líder |
-| `GET /lider/pendentes` | Líder: quem veio do RH e ainda não ativou |
-| `POST /lider/codigos-ativacao` | Líder: gera o código de primeiro acesso |
-| `GET /lider/tentativas-recusadas` | Líder: tentativas recusadas do dia |
-| `GET /lider/avisos` | Líder: bloqueios e outros avisos |
+| `POST /acesso/entrar` | Todos |
+| `GET /lider/equipe` | Líder e gerente: equipe com situação de acesso |
+| `GET /lider/pendentes` | Líder e gerente: quem veio do RH e ainda não ativou |
+| `POST /lider/codigos-ativacao` | Líder e gerente: gera o código de primeiro acesso |
+| `GET /lider/tentativas-recusadas` | Líder e gerente: tentativas recusadas do dia |
+| `GET /lider/avisos` | Líder e gerente: bloqueios e outros avisos |
+| `GET /lider/produtos-em-alerta` | Líder e gerente: produtos parados ou prestes a faltar |
+| `GET /gerente/setores` | Gerente: resumo de cada setor |
+| `GET /gerente/aparelhos` | Gerente: aparelhos da loja |
+| `POST /gerente/aparelhos/:id/bloquear` e `/desbloquear` | Gerente: bloqueia um aparelho perdido e derruba as sessões dele |
 | `GET /produtos?q=` | Busca por nome, marca, SKU ou EAN |
 | `GET /produtos/ficha/:codigo` | Ficha completa a partir do QR (`ENDERECA:P:<sku>`), EAN ou SKU |
 
@@ -43,7 +52,7 @@ npm install
 export $(cat .env | xargs)
 npm run migrate
 npm run seed                      # dados de demonstração
-npm run codigo-inicial -- 001000  # código do líder de demonstração
+npm run codigo-inicial -- 000100  # código da gerente de demonstração
 npm run dev
 ```
 
@@ -61,9 +70,22 @@ npm start          # abre o Expo; use o app Expo Go ou um emulador Android
 
 O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http://10.0.2.2:3000` é a API rodando no computador, vista do emulador Android). Como a API só aceita aparelhos autorizados, cadastre o identificador do celular ou emulador antes de entrar.
 
+## Painel do líder e do gerente
+
+Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Equipe, Acessos (gerar código, tentativas recusadas, avisos) e Produtos e avisos. O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
+
+```bash
+cd apps/painel
+cp .env.example .env   # VITE_API_URL, padrão http://localhost:3000
+npm install
+npm run dev            # http://localhost:5173
+```
+
+O navegador gera um identificador `WEB-...`, mostrado na tela de login. Cadastre-o com `npm run cadastrar-aparelho` na API e inclua a origem do painel em `ORIGENS_PAINEL`.
+
 ## Testes
 
-O app roda `npm test` e `npm run typecheck` em `apps/mobile`. Na API:
+O app e o painel rodam `npm test` e `npm run typecheck` nas suas pastas. Na API:
 
 Os testes de ponta a ponta usam um PostgreSQL de verdade, apontado por `TEST_DATABASE_URL` (o padrão é `postgres://postgres@127.0.0.1:5433/endereca_test`). O banco de teste é apagado a cada execução.
 

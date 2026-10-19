@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsOptional, IsString, Length, Matches, ValidateNested } from 'class-validator';
-import { MATRICULA_REGEX, Papel } from '../auth/tipos';
+import { MATRICULA_REGEX, Papel, PAPEIS_VALIDOS } from '../auth/tipos';
 
 export class LojaRhDto {
   @IsString()
@@ -24,8 +24,14 @@ export class ColaboradorRhDto {
   @Length(1, 20)
   lojaId!: string;
 
-  @IsIn(['repositor', 'lider', 'admin'])
+  @IsIn(PAPEIS_VALIDOS)
   papel!: Papel;
+
+  /** Setor de trabalho (mercearia, padaria, açougue...). O líder enxerga só a equipe do seu setor. */
+  @IsOptional()
+  @IsString()
+  @Length(1, 60)
+  setor?: string;
 
   /** false quando o colaborador foi desligado ou afastado. */
   @IsBoolean()

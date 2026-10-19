@@ -5,5 +5,6 @@ import { LiderService } from './lider.service';
 @Module({
   controllers: [LiderController],
   providers: [LiderService],
+  exports: [LiderService],
 })
 export class LiderModule {}
