@@ -2,7 +2,7 @@
 
 App interno para lojas de atacarejo: o repositor escaneia o QR Code ou o código de barras e descobre onde o produto está, na área de venda (endereços R-) e no estoque (depósito, caixaria, gaveta, intermédio, aéreo). O líder acompanha a equipe e libera os acessos.
 
-Este repositório começa pela API. O app do repositor e o painel do líder vêm nas próximas etapas.
+O repositório tem a API (`apps/api`) e o app do repositor para Android (`apps/mobile`). O painel do líder vem na próxima etapa.
 
 ## Como o acesso funciona
 
@@ -47,9 +47,23 @@ npm run codigo-inicial -- 001000  # código do líder de demonstração
 npm run dev
 ```
 
-O aparelho de demonstração é `APARELHO-DEMO-01`.
+O aparelho de demonstração é `APARELHO-DEMO-01`. Para autorizar um celular de verdade, pegue o identificador que aparece no rodapé da tela de login do app e rode `npm run cadastrar-aparelho -- <identificador> <loja> "<descrição>"`.
+
+## App do repositor
+
+Feito com Expo (React Native) para os celulares Android da loja. Telas: login com matrícula e palavra secreta, primeiro acesso com o código do líder, scanner de QR Code e código de barras (ou código digitado), busca por nome, marca, SKU ou EAN, e a ficha completa do produto. O token fica no armazenamento criptografado do aparelho e, se o RH desligar a pessoa ou a sessão cair, o app volta para o login.
+
+```bash
+cd apps/mobile
+npm install
+npm start          # abre o Expo; use o app Expo Go ou um emulador Android
+```
+
+O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http://10.0.2.2:3000` é a API rodando no computador, vista do emulador Android). Como a API só aceita aparelhos autorizados, cadastre o identificador do celular ou emulador antes de entrar.
 
 ## Testes
+
+O app roda `npm test` e `npm run typecheck` em `apps/mobile`. Na API:
 
 Os testes de ponta a ponta usam um PostgreSQL de verdade, apontado por `TEST_DATABASE_URL` (o padrão é `postgres://postgres@127.0.0.1:5433/endereca_test`). O banco de teste é apagado a cada execução.
 
