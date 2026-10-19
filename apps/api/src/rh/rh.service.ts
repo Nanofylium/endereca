@@ -32,13 +32,13 @@ export class RhService {
 
         // Desligar incrementa versao_token: todas as sessões abertas caem na próxima requisição.
         await cliente.query(
-          `INSERT INTO colaboradores (matricula, nome, loja_id, papel, ativo_no_rh)
-           VALUES ($1, $2, $3, $4, $5)
+          `INSERT INTO colaboradores (matricula, nome, loja_id, papel, ativo_no_rh, setor)
+           VALUES ($1, $2, $3, $4, $5, $7)
            ON CONFLICT (matricula) DO UPDATE SET
-             nome = EXCLUDED.nome, loja_id = EXCLUDED.loja_id, papel = EXCLUDED.papel, ativo_no_rh = EXCLUDED.ativo_no_rh,
+             nome = EXCLUDED.nome, loja_id = EXCLUDED.loja_id, papel = EXCLUDED.papel, ativo_no_rh = EXCLUDED.ativo_no_rh, setor = EXCLUDED.setor,
              versao_token = colaboradores.versao_token + CASE WHEN $6 THEN 1 ELSE 0 END,
              atualizado_em = now()`,
-          [c.matricula, c.nome, c.lojaId, c.papel, c.ativo, desligando],
+          [c.matricula, c.nome, c.lojaId, c.papel, c.ativo, desligando, c.setor?.trim() || null],
         );
 
         if (desligando) {

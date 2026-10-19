@@ -9,11 +9,17 @@ function inicioDoDia(): Date {
   return d;
 }
 
+/** Rotas do painel do líder. O gerente operacional e o administrador também as usam, com escopo maior. */
 @Controller('lider')
 @UseGuards(SessaoGuard)
-@Papeis('lider', 'admin')
+@Papeis('lider', 'gerente', 'admin')
 export class LiderController {
   constructor(private readonly lider: LiderService) {}
+
+  @Get('equipe')
+  equipe(@Req() req: RequisicaoAutenticada) {
+    return this.lider.equipe(req.sessao);
+  }
 
   @Get('pendentes')
   pendentes(@Req() req: RequisicaoAutenticada) {
@@ -34,5 +40,10 @@ export class LiderController {
   @Get('avisos')
   avisos(@Req() req: RequisicaoAutenticada) {
     return this.lider.avisos(req.sessao);
+  }
+
+  @Get('produtos-em-alerta')
+  produtosEmAlerta(@Req() req: RequisicaoAutenticada) {
+    return this.lider.produtosEmAlerta(req.sessao);
   }
 }

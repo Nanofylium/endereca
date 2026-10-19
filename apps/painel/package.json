@@ -1,0 +1,25 @@
+{
+  "name": "@endereca/painel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Painel web do líder e do gerente operacional",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.7",
+    "vite": "^6.4.4",
+    "vitest": "^3.2.7"
+  }
+}

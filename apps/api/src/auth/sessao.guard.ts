@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { DbService } from '../db/db.service';
 import { ErroAcesso } from './acesso.service';
-import { Papel, Sessao } from './tipos';
+import { Papel, Sessao, SessaoAtual } from './tipos';
 
 export const CABECALHO_APARELHO = 'x-aparelho-id';
 const PAPEIS = 'papeis';
@@ -13,7 +13,7 @@ const PAPEIS = 'papeis';
 export const Papeis = (...papeis: Papel[]) => SetMetadata(PAPEIS, papeis);
 
 export interface RequisicaoAutenticada extends Request {
-  sessao: Sessao;
+  sessao: SessaoAtual;
 }
 
 /**
@@ -44,8 +44,8 @@ export class SessaoGuard implements CanActivate {
       throw new ErroAcesso(HttpStatus.UNAUTHORIZED, 'aparelho_diferente', 'Sessão aberta em outro aparelho. Entre novamente.');
     }
 
-    const [atual] = await this.db.query<{ ativo_no_rh: boolean; versao_token: number; aparelho_ativo: boolean | null }>(
-      `SELECT c.ativo_no_rh, c.versao_token, a.ativo AS aparelho_ativo
+    const [atual] = await this.db.query<{ ativo_no_rh: boolean; versao_token: number; papel: Papel; setor: string | null; aparelho_ativo: boolean | null }>(
+      `SELECT c.ativo_no_rh, c.versao_token, c.papel, c.setor, a.ativo AS aparelho_ativo
        FROM colaboradores c LEFT JOIN aparelhos a ON a.id = $2
        WHERE c.matricula = $1`,
       [sessao.sub, sessao.ap],
@@ -55,11 +55,11 @@ export class SessaoGuard implements CanActivate {
     }
 
     const papeis = this.reflector.getAllAndOverride<Papel[] | undefined>(PAPEIS, [contexto.getHandler(), contexto.getClass()]);
-    if (papeis && !papeis.includes(sessao.papel)) {
+    if (papeis && !papeis.includes(atual.papel)) {
       throw new ErroAcesso(HttpStatus.FORBIDDEN, 'sem_permissao', 'Você não tem permissão para esta ação.');
     }
 
-    req.sessao = sessao;
+    req.sessao = { ...sessao, papel: atual.papel, setor: atual.setor };
     return true;
   }
 }
