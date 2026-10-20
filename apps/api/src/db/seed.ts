@@ -4,6 +4,7 @@
  */
 import { Pool } from 'pg';
 import { hojeNaLoja } from '../produtos/indicadores';
+import { novoCodigo } from '../etiquetas/codigos';
 import { aplicarMigracoes } from './migrate';
 
 const LOJA = { id: 'L001', nome: 'Loja de demonstração' };
@@ -53,6 +54,19 @@ async function semear() {
         await pool.query('INSERT INTO vendas_diarias (sku, loja_id, dia, unidades) VALUES ($1, $2, $3, $4) ON CONFLICT (sku, loja_id, dia) DO UPDATE SET unidades = EXCLUDED.unidades', [p.sku, LOJA.id, diaMenos(hoje, 6 - i), unidades]);
       }
       await pool.query('INSERT INTO apreciacao_produto (sku, loja_id, nota) VALUES ($1, $2, $3) ON CONFLICT (sku, loja_id) DO UPDATE SET nota = EXCLUDED.nota', [p.sku, LOJA.id, p.nota]);
+      // Etiquetas de endereço para os lugares onde o produto está.
+      for (const [t, r, m, n] of [['venda', rua, modulo, nivel], [tipo, ruaE, moduloE, nivelE]]) {
+        await pool.query(
+          `INSERT INTO locais (codigo, loja_id, tipo, rua, modulo, nivel, criado_por) VALUES ($1, $2, $3, $4, $5, $6, 'seed')
+           ON CONFLICT (loja_id, tipo, rua, (COALESCE(modulo, '')), (COALESCE(nivel, '')), (COALESCE(posicao, ''))) DO NOTHING`,
+          [novoCodigo(), LOJA.id, t, r, m, n],
+        );
+      }
+    }
+    // Uma caixa recebida esperando ser guardada.
+    const { rows } = await pool.query("SELECT 1 FROM volumes WHERE loja_id = $1 AND local_id IS NULL", [LOJA.id]);
+    if (!rows.length) {
+      await pool.query("INSERT INTO volumes (codigo, loja_id, sku, quantidade, lote, validade, recebido_por) VALUES ($1, $2, '100245', 6, 'L2410', '2027-03-01', 'seed')", [novoCodigo(), LOJA.id]);
     }
     console.log('Dados de demonstração gravados. Gere o código da gerente com: npm run codigo-inicial -- 000100');
   } finally {

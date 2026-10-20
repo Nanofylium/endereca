@@ -2,7 +2,11 @@ import {
   Aparelho,
   Aviso,
   CodigoGerado,
+  EtiquetaLocal,
+  EtiquetaVolume,
   MembroEquipe,
+  NovoLocal,
+  NovoRecebimento,
   ProdutoEmAlerta,
   RespostaAcesso,
   ResumoSetor,
@@ -74,6 +78,10 @@ export function criarApi(opcoes: OpcoesApi) {
     aparelhos: () => chamar<Aparelho[]>('GET', '/gerente/aparelhos'),
     bloquearAparelho: (id: string, bloquear: boolean) =>
       chamar<{ id: string; ativo: boolean }>('POST', `/gerente/aparelhos/${encodeURIComponent(id)}/${bloquear ? 'bloquear' : 'desbloquear'}`),
+    enderecos: () => chamar<EtiquetaLocal[]>('GET', '/etiquetas/enderecos'),
+    criarEnderecos: (locais: NovoLocal[]) => chamar<EtiquetaLocal[]>('POST', '/etiquetas/enderecos', { locais }),
+    receberVolumes: (dados: NovoRecebimento) => chamar<EtiquetaVolume[]>('POST', '/etiquetas/volumes', dados),
+    volumesAguardando: () => chamar<EtiquetaVolume[]>('GET', '/etiquetas/volumes/aguardando'),
   };
 }
 

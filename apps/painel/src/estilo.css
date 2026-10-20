@@ -100,3 +100,28 @@ h1 { margin: 0; font-size: 26px; font-weight: 800; }
   .menu .rodape { margin-top: 0; width: 100%; }
   .conteudo { padding: 20px 16px; }
 }
+
+.formulario { display: flex; flex-direction: column; gap: 12px; }
+.formulario label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--texto-2); min-width: 0; }
+.campos-linha label { flex: 1 1 120px; }
+.formulario input, .formulario select { height: 44px; border-radius: 10px; border: 2px solid #c9d2e0; padding: 0 12px; font-size: 15px; background: #fff; color: var(--texto); min-width: 0; }
+.campos-linha { display: flex; gap: 10px; flex-wrap: wrap; }
+.grade-larga:has(.formulario) { align-items: start; }
+
+.folha { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.etiqueta { border: 2px dashed #c9d2e0; border-radius: 10px; padding: 10px; display: flex; gap: 12px; align-items: center; break-inside: avoid; background: #fff; color: #000; }
+.etiqueta > div:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.etiqueta strong { font-size: 17px; line-height: 1.2; }
+.etiqueta-tipo { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #444; }
+.etiqueta-codigo { font-family: ui-monospace, monospace; font-size: 13px; letter-spacing: 1px; }
+.qr { width: 96px; height: 96px; flex: none; }
+.qr svg { width: 100%; height: 100%; display: block; }
+
+/* Na impressão sai só a folha de etiquetas. */
+@media print {
+  body { background: #fff; }
+  body * { visibility: hidden; }
+  .folha, .folha * { visibility: visible; }
+  .folha { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: repeat(2, 1fr); }
+  .etiqueta { border: 1px solid #000; }
+}

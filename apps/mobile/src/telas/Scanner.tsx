@@ -6,7 +6,14 @@ import { Cabecalho } from '../componentes/Cabecalho';
 import { cores } from '../tema';
 
 /** Lê o QR Code das etiquetas do Endereça e os códigos de barras comuns de produto. */
-export function Scanner(props: { aoLer: (codigo: string) => void; aoVoltar: () => void }) {
+export function Scanner(props: {
+  aoLer: (codigo: string) => void;
+  aoVoltar: () => void;
+  titulo?: string;
+  subtitulo?: string;
+  instrucao?: string;
+  rotuloDigitar?: string;
+}) {
   const [permissao, pedirPermissao] = useCameraPermissions();
   const [digitado, setDigitado] = useState('');
   const lido = useRef(false);
@@ -20,7 +27,7 @@ export function Scanner(props: { aoLer: (codigo: string) => void; aoVoltar: () =
 
   return (
     <View style={{ flex: 1, backgroundColor: '#0A0F1A' }}>
-      <Cabecalho titulo="Escanear produto" subtitulo="QR Code ou código de barras" onVoltar={props.aoVoltar} />
+      <Cabecalho titulo={props.titulo ?? 'Escanear produto'} subtitulo={props.subtitulo ?? 'QR Code ou código de barras'} onVoltar={props.aoVoltar} />
       <View style={estilos.area}>
         {permissao?.granted ? (
           <View style={estilos.moldura}>
@@ -37,19 +44,20 @@ export function Scanner(props: { aoLer: (codigo: string) => void; aoVoltar: () =
             <Botao titulo="Permitir câmera" onPress={pedirPermissao} />
           </View>
         )}
-        <Text style={estilos.texto}>Aponte para o QR Code da etiqueta da gôndola ou do palete, ou para o código de barras do produto.</Text>
+        <Text style={estilos.texto}>{props.instrucao ?? 'Aponte para o QR Code da etiqueta da gôndola ou do palete, ou para o código de barras do produto.'}</Text>
         <View style={{ width: '100%', gap: 10 }}>
           <TextInput
             accessibilityLabel="Digitar o código"
             value={digitado}
             onChangeText={setDigitado}
-            placeholder="Ou digite o EAN ou SKU"
+            placeholder={props.rotuloDigitar ?? 'Ou digite o EAN ou SKU'}
             placeholderTextColor="#8A94A6"
-            keyboardType="number-pad"
+            keyboardType={props.rotuloDigitar ? 'default' : 'number-pad'}
+            autoCapitalize="characters"
             style={estilos.campo}
             onSubmitEditing={() => digitado.trim() && props.aoLer(digitado)}
           />
-          <Botao titulo="Abrir ficha" variante="escuro" desabilitado={!digitado.trim()} onPress={() => props.aoLer(digitado)} />
+          <Botao titulo={props.rotuloDigitar ? 'Continuar' : 'Abrir ficha'} variante="escuro" desabilitado={!digitado.trim()} onPress={() => props.aoLer(digitado)} />
         </View>
       </View>
     </View>
