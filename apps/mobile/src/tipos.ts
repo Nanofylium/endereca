@@ -46,3 +46,28 @@ export interface ItemBusca {
   nome: string;
   departamento: string;
 }
+
+export interface EtiquetaLocal {
+  codigo: string;
+  qr: string;
+  tipo: TipoEndereco;
+  nomeTipo: string;
+  descricao: string;
+}
+
+export interface EtiquetaVolume {
+  codigo: string;
+  qr: string;
+  sku: string;
+  produto: string;
+  quantidade: number;
+  lote: string | null;
+  validade: string | null;
+  recebidoEm: string;
+  guardado: { local: EtiquetaLocal; em: string; por: string | null } | null;
+}
+
+export type LeituraEtiqueta =
+  | { tipo: 'endereco'; endereco: EtiquetaLocal; produtos: { sku: string; nome: string; quantidade: number | null; confirmadoEm: string | null }[] }
+  | { tipo: 'volume'; volume: EtiquetaVolume }
+  | { tipo: 'produto'; sku: string };

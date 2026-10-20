@@ -68,3 +68,41 @@ export interface Aparelho {
   bloqueado_em: string | null;
   ultimo_uso: string | null;
 }
+
+export type TipoLocal = 'venda' | 'deposito' | 'caixaria' | 'gaveta' | 'intermedio' | 'aereo';
+
+export interface NovoLocal {
+  tipo: TipoLocal;
+  rua: string;
+  modulo?: string;
+  nivel?: string;
+  posicao?: string;
+}
+
+export interface EtiquetaLocal {
+  codigo: string;
+  qr: string;
+  tipo: TipoLocal;
+  nomeTipo: string;
+  descricao: string;
+}
+
+export interface EtiquetaVolume {
+  codigo: string;
+  qr: string;
+  sku: string;
+  produto: string;
+  quantidade: number;
+  lote: string | null;
+  validade: string | null;
+  recebidoEm: string;
+  guardado: { local: EtiquetaLocal; em: string; por: string | null } | null;
+}
+
+export interface NovoRecebimento {
+  produto: string;
+  quantidade: number;
+  volumes: number;
+  lote?: string;
+  validade?: string;
+}

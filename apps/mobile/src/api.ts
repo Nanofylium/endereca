@@ -1,4 +1,4 @@
-import { Ficha, ItemBusca, RespostaAcesso } from './tipos';
+import { EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, RespostaAcesso } from './tipos';
 
 export class ErroApi extends Error {
   constructor(
@@ -59,6 +59,9 @@ export function criarApi(opcoes: OpcoesApi) {
       chamar<RespostaAcesso>('POST', '/acesso/ativar', { matricula: matricula.trim(), codigo: codigo.trim(), palavraSecreta }),
     ficha: (codigoLido: string) => chamar<Ficha>('GET', `/produtos/ficha/${encodeURIComponent(codigoLido.trim())}`),
     buscar: (termo: string) => chamar<ItemBusca[]>('GET', `/produtos?q=${encodeURIComponent(termo)}`),
+    lerEtiqueta: (codigoLido: string) => chamar<LeituraEtiqueta>('GET', `/etiquetas/ler/${encodeURIComponent(codigoLido.trim())}`),
+    guardar: (volume: string, endereco: string) =>
+      chamar<{ volume: EtiquetaVolume; movido: boolean }>('POST', '/etiquetas/guardar', { volume: volume.trim(), endereco: endereco.trim() }),
   };
 }
 

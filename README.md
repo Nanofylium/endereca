@@ -35,10 +35,27 @@ O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor:
 | `GET /gerente/setores` | Gerente: resumo de cada setor |
 | `GET /gerente/aparelhos` | Gerente: aparelhos da loja |
 | `POST /gerente/aparelhos/:id/bloquear` e `/desbloquear` | Gerente: bloqueia um aparelho perdido e derruba as sessões dele |
+| `POST /erp/produtos` | Sistema do catálogo (chave `x-erp-api-key`): importa e atualiza produtos pelo SKU e EAN |
+| `POST /etiquetas/enderecos` | Líder e gerente: cria as etiquetas fixas de endereço |
+| `GET /etiquetas/enderecos` | Líder e gerente: endereços etiquetados |
+| `POST /etiquetas/volumes` | Recebimento: uma etiqueta para cada caixa ou palete |
+| `GET /etiquetas/volumes/aguardando` | Volumes recebidos que ainda não foram guardados |
+| `GET /etiquetas/ler/:codigo` | Diz o que foi bipado: endereço (com o que há nele), volume ou produto |
+| `POST /etiquetas/guardar` | Bipou o volume e o endereço: registra onde o produto está |
 | `GET /produtos?q=` | Busca por nome, marca, SKU ou EAN |
 | `GET /produtos/ficha/:codigo` | Ficha completa a partir do QR (`ENDERECA:P:<sku>`), EAN ou SKU |
 
 A ficha traz o endereço R- na área de venda, a quantidade na gôndola, os endereços de estoque, os dias sem venda, a apreciação do público (nota de 0 a 5), as vendas dos últimos 7 dias, a previsão de ruptura e o lote com validade e fornecedor.
+
+## Etiquetas e cadastro dos itens
+
+Ninguém cadastra produto à mão: o catálogo vem do ERP por `POST /erp/produtos`, pelo SKU e EAN que já estão na embalagem. O que a loja etiqueta são os lugares e os volumes:
+
+- **Etiqueta de endereço** (`ENDERECA:L:<código>`): fixa em cada lugar (R-07 módulo 5 nível 3, Rua B 04, gaveta 14). O líder gera em lote no painel, com faixas como módulos 1-10 e níveis 1-4.
+- **Etiqueta de volume** (`ENDERECA:V:<código>`): colada em cada caixa ou palete no recebimento, com produto, quantidade, lote e validade.
+- **Endereçamento**: no app, o repositor bipa o volume e depois o endereço. O produto passa a constar ali com a quantidade do volume; se o volume já estava em outro lugar, a quantidade sai de lá.
+
+O código impresso embaixo do QR usa só letras e números fáceis de ler (sem 0, O, 1, I e L), para digitar quando a etiqueta estiver danificada.
 
 ## Rodando localmente
 
@@ -60,7 +77,7 @@ O aparelho de demonstração é `APARELHO-DEMO-01`. Para autorizar um celular de
 
 ## App do repositor
 
-Feito com Expo (React Native) para os celulares Android da loja. Telas: login com matrícula e palavra secreta, primeiro acesso com o código do líder, scanner de QR Code e código de barras (ou código digitado), busca por nome, marca, SKU ou EAN, e a ficha completa do produto. O token fica no armazenamento criptografado do aparelho e, se o RH desligar a pessoa ou a sessão cair, o app volta para o login.
+Feito com Expo (React Native) para os celulares Android da loja. Telas: login com matrícula e palavra secreta, guardar caixa ou palete (bipa o volume e o endereço), o que está em um endereço, primeiro acesso com o código do líder, scanner de QR Code e código de barras (ou código digitado), busca por nome, marca, SKU ou EAN, e a ficha completa do produto. O token fica no armazenamento criptografado do aparelho e, se o RH desligar a pessoa ou a sessão cair, o app volta para o login.
 
 ```bash
 cd apps/mobile
@@ -72,7 +89,7 @@ O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http:/
 
 ## Painel do líder e do gerente
 
-Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Equipe, Acessos (gerar código, tentativas recusadas, avisos) e Produtos e avisos. O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
+Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Equipe, Acessos (gerar código, tentativas recusadas, avisos), Produtos e avisos, e Etiquetas (gerar e imprimir etiquetas de endereço e de volume). O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
 
 ```bash
 cd apps/painel
