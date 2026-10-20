@@ -4,12 +4,15 @@ import {
   CodigoGerado,
   EtiquetaLocal,
   EtiquetaVolume,
+  Falta,
   MembroEquipe,
+  NovaBoaDoDia,
   NovoLocal,
   NovoRecebimento,
   ProdutoEmAlerta,
   RespostaAcesso,
   ResumoSetor,
+  Tarefa,
   TentativaRecusada,
 } from './tipos';
 
@@ -81,6 +84,11 @@ export function criarApi(opcoes: OpcoesApi) {
     enderecos: () => chamar<EtiquetaLocal[]>('GET', '/etiquetas/enderecos'),
     criarEnderecos: (locais: NovoLocal[]) => chamar<EtiquetaLocal[]>('POST', '/etiquetas/enderecos', { locais }),
     receberVolumes: (dados: NovoRecebimento) => chamar<EtiquetaVolume[]>('POST', '/etiquetas/volumes', dados),
+    tarefas: (dia?: string) => chamar<Tarefa[]>('GET', `/tarefas${dia ? `?dia=${dia}` : ''}`),
+    enviarBoaDoDia: (dados: NovaBoaDoDia) => chamar<Tarefa>('POST', '/tarefas/boa-do-dia', dados),
+    atribuirTarefa: (id: string, matricula: string) => chamar<Tarefa>('POST', `/tarefas/${encodeURIComponent(id)}/atribuir`, { matricula }),
+    faltas: () => chamar<Falta[]>('GET', '/faltas'),
+    resolverFalta: (id: string) => chamar<{ id: string; resolvida: boolean }>('POST', `/faltas/${encodeURIComponent(id)}/resolver`),
     volumesAguardando: () => chamar<EtiquetaVolume[]>('GET', '/etiquetas/volumes/aguardando'),
   };
 }

@@ -68,6 +68,12 @@ async function semear() {
     if (!rows.length) {
       await pool.query("INSERT INTO volumes (codigo, loja_id, sku, quantidade, lote, validade, recebido_por) VALUES ($1, $2, '100245', 6, 'L2410', '2027-03-01', 'seed')", [novoCodigo(), LOJA.id]);
     }
+    // Boa do Dia de hoje esperando o líder da Mercearia escolher quem faz.
+    await pool.query(
+      `INSERT INTO tarefas (loja_id, tipo, sku, setor, dia, instrucoes, criada_por) VALUES ($1, 'boa_do_dia', '100245', 'Mercearia', $2, 'Ponta de gôndola da entrada, com cartaz', '000100')
+       ON CONFLICT (loja_id, dia, sku) WHERE tipo = 'boa_do_dia' DO NOTHING`,
+      [LOJA.id, hoje],
+    );
     console.log('Dados de demonstração gravados. Gere o código da gerente com: npm run codigo-inicial -- 000100');
   } finally {
     await pool.end();

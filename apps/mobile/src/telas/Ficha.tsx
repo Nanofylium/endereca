@@ -3,16 +3,30 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { Api, ErroApi } from '../api';
 import { Botao } from '../componentes/Botao';
 import { Cabecalho } from '../componentes/Cabecalho';
+import { AvisoFalta } from '../componentes/AvisoFalta';
 import { Cartao } from '../componentes/Cartao';
 import { ALERTA_GRAVE, dataCurta, diaDaSemana, formatarEndereco, NOME_TIPO, notaComVirgula, textoDiasSemVenda } from '../formatar';
 import { cores } from '../tema';
-import { Ficha as TipoFicha } from '../tipos';
+import { ResultadoFalta, Ficha as TipoFicha } from '../tipos';
 
 const ALTURA_BARRAS = 56;
 
 export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; aoErro: (e: unknown) => void }) {
   const [ficha, setFicha] = useState<TipoFicha | null>(null);
   const [erro, setErro] = useState('');
+  const [falta, setFalta] = useState<ResultadoFalta | null>(null);
+  const [avisando, setAvisando] = useState(false);
+
+  async function avisarFalta(sku: string) {
+    setAvisando(true);
+    try {
+      setFalta(await props.api.registrarFalta(sku));
+    } catch (e) {
+      props.aoErro(e);
+    } finally {
+      setAvisando(false);
+    }
+  }
 
   useEffect(() => {
     let atual = true;
@@ -78,6 +92,12 @@ export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; a
             <Text style={estilos.texto}>Sem endereço na área de venda.</Text>
           )}
         </Cartao>
+
+        {falta ? (
+          <AvisoFalta falta={falta} />
+        ) : (
+          <Botao titulo="Não tem na gôndola" variante="contorno" carregando={avisando} onPress={() => avisarFalta(ficha.produto.sku)} />
+        )}
 
         <View style={estilos.linha}>
           <Cartao titulo="Dias sem venda" estilo={{ flex: 1, ...(parado ? { backgroundColor: cores.laranjaFundo, borderColor: '#F3C7A8' } : {}) }}>

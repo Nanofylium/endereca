@@ -42,6 +42,13 @@ O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor:
 | `GET /etiquetas/volumes/aguardando` | Volumes recebidos que ainda não foram guardados |
 | `GET /etiquetas/ler/:codigo` | Diz o que foi bipado: endereço (com o que há nele), volume ou produto |
 | `POST /etiquetas/guardar` | Bipou o volume e o endereço: registra onde o produto está |
+| `POST /tarefas/boa-do-dia` | Gerente: envia a Boa do Dia para o setor |
+| `GET /tarefas` | Líder e gerente: Boa do Dia do dia, com quem está e em que pé |
+| `POST /tarefas/:id/atribuir` | Líder: escolhe quem da equipe vai preparar |
+| `GET /tarefas/minhas` | Repositor: as tarefas passadas para ele |
+| `POST /tarefas/:id/concluir` | Repositor: feito, ou sem produto |
+| `POST /faltas` | Repositor: não tem o produto na gôndola para escanear |
+| `GET /faltas` e `POST /faltas/:id/resolver` | Líder e gerente: faltas abertas |
 | `GET /produtos?q=` | Busca por nome, marca, SKU ou EAN |
 | `GET /produtos/ficha/:codigo` | Ficha completa a partir do QR (`ENDERECA:P:<sku>`), EAN ou SKU |
 
@@ -56,6 +63,12 @@ Ninguém cadastra produto à mão: o catálogo vem do ERP por `POST /erp/produto
 - **Endereçamento**: no app, o repositor bipa o volume e depois o endereço. O produto passa a constar ali com a quantidade do volume; se o volume já estava em outro lugar, a quantidade sai de lá.
 
 O código impresso embaixo do QR usa só letras e números fáceis de ler (sem 0, O, 1, I e L), para digitar quando a etiqueta estiver danificada.
+
+## Boa do Dia e produto em falta
+
+O gerente operacional escolhe o produto da Boa do Dia e o setor. O líder do setor recebe o aviso no painel e escolhe quem da equipe vai preparar; a pessoa vê a tarefa na tela inicial do app, com o endereço da gôndola e onde buscar no estoque, e marca "Feito" ou "Sem produto".
+
+Quando não há produto na gôndola para escanear, o repositor bipa a etiqueta do endereço na prateleira ou busca pelo nome e toca em "Não tem na gôndola" na ficha. Se houver estoque registrado, o app mostra onde buscar. Se não houver, o líder é avisado para pedir reposição. As faltas abertas ficam no painel, as sem estoque primeiro.
 
 ## Rodando localmente
 

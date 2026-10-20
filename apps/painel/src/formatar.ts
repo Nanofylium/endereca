@@ -1,4 +1,4 @@
-import { Papel, Situacao } from './tipos';
+import { MembroEquipe, Papel, Situacao, SituacaoTarefa } from './tipos';
 
 export const NOME_PAPEL: Record<Papel, string> = {
   repositor: 'Repositor',
@@ -43,4 +43,20 @@ export function quando(iso: string | null, agora = new Date()): string {
 export function iniciais(nome: string): string {
   const partes = nome.trim().split(/\s+/);
   return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+}
+
+export const NOME_SITUACAO_TAREFA: Record<SituacaoTarefa, string> = {
+  aguardando_lider: 'Esperando o líder',
+  atribuida: 'Em andamento',
+  concluida: 'Concluída',
+  sem_produto: 'Sem produto',
+};
+
+/** Quem pode receber a tarefa: o líder escolhe na própria equipe; o gerente vê primeiro quem é do setor. */
+export function candidatosTarefa(equipe: MembroEquipe[], setor: string, papel: Papel, eu: string): MembroEquipe[] {
+  const mesmo = (s: string | null) => !!s && s.trim().toLocaleLowerCase('pt-BR') === setor.trim().toLocaleLowerCase('pt-BR');
+  const executam = equipe.filter((m) => m.situacao !== 'pendente' && (m.papel === 'repositor' || m.papel === 'lider'));
+  if (papel === 'lider') return executam.filter((m) => m.matricula === eu || (m.papel === 'repositor' && mesmo(m.setor)));
+  const doSetor = executam.filter((m) => mesmo(m.setor));
+  return doSetor.length ? doSetor : executam;
 }
