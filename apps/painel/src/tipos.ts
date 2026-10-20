@@ -106,3 +106,49 @@ export interface NovoRecebimento {
   lote?: string;
   validade?: string;
 }
+
+export interface LocalComQuantidade {
+  nomeTipo: string;
+  descricao: string;
+  quantidade: number | null;
+}
+
+export type SituacaoTarefa = 'aguardando_lider' | 'atribuida' | 'concluida' | 'sem_produto';
+
+export interface Tarefa {
+  id: string;
+  tipo: 'boa_do_dia';
+  sku: string;
+  produto: string;
+  setor: string;
+  dia: string;
+  instrucoes: string | null;
+  criadaPor: string;
+  criadaEm: string;
+  responsavel: { matricula: string; nome: string } | null;
+  atribuidaEm: string | null;
+  situacao: SituacaoTarefa;
+  concluidaEm: string | null;
+  observacao: string | null;
+  enderecoVenda: LocalComQuantidade | null;
+  estoque: LocalComQuantidade[];
+}
+
+export interface NovaBoaDoDia {
+  produto: string;
+  setor?: string;
+  dia?: string;
+  instrucoes?: string;
+}
+
+export interface Falta {
+  id: string;
+  sku: string;
+  produto: string;
+  departamento: string;
+  reportadoPor: string;
+  reportadoPorNome: string | null;
+  reportadoEm: string;
+  estoque: number;
+  observacao: string | null;
+}

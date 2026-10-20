@@ -71,3 +71,31 @@ export type LeituraEtiqueta =
   | { tipo: 'endereco'; endereco: EtiquetaLocal; produtos: { sku: string; nome: string; quantidade: number | null; confirmadoEm: string | null }[] }
   | { tipo: 'volume'; volume: EtiquetaVolume }
   | { tipo: 'produto'; sku: string };
+
+export interface LocalComQuantidade {
+  nomeTipo: string;
+  descricao: string;
+  quantidade: number | null;
+}
+
+export interface Tarefa {
+  id: string;
+  tipo: 'boa_do_dia';
+  sku: string;
+  produto: string;
+  setor: string;
+  dia: string;
+  instrucoes: string | null;
+  responsavel: { matricula: string; nome: string } | null;
+  situacao: 'aguardando_lider' | 'atribuida' | 'concluida' | 'sem_produto';
+  enderecoVenda: LocalComQuantidade | null;
+  estoque: LocalComQuantidade[];
+}
+
+export interface ResultadoFalta {
+  id: string;
+  sku: string;
+  produto: string;
+  estoque: LocalComQuantidade[];
+  mensagem: string;
+}

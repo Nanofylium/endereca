@@ -4,6 +4,7 @@ import { identificarNavegador, lerSessao, salvarSessao } from './aparelho';
 import { Contexto } from './contexto';
 import { NOME_PAPEL } from './formatar';
 import { Acessos } from './telas/Acessos';
+import { BoaDoDia } from './telas/BoaDoDia';
 import { Alertas } from './telas/Alertas';
 import { Aparelhos } from './telas/Aparelhos';
 import { Equipe } from './telas/Equipe';
@@ -14,10 +15,11 @@ import { Papel, RespostaAcesso } from './tipos';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-type Aba = 'setores' | 'equipe' | 'acessos' | 'alertas' | 'etiquetas' | 'aparelhos';
+type Aba = 'setores' | 'boa' | 'equipe' | 'acessos' | 'alertas' | 'etiquetas' | 'aparelhos';
 
 const ABAS: { id: Aba; rotulo: string; titulo: string; papeis: Papel[] }[] = [
   { id: 'setores', rotulo: 'Setores', titulo: 'Visão dos setores', papeis: ['gerente', 'admin'] },
+  { id: 'boa', rotulo: 'Boa do Dia e faltas', titulo: 'Boa do Dia e faltas na gôndola', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'equipe', rotulo: 'Equipe', titulo: 'Equipe', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'acessos', rotulo: 'Acessos', titulo: 'Acessos e segurança', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'alertas', rotulo: 'Produtos e avisos', titulo: 'Produtos e avisos', papeis: ['lider', 'gerente', 'admin'] },
@@ -61,7 +63,7 @@ export function App() {
   const papel = sessao.colaborador.papel;
   const abas = ABAS.filter((a) => a.papeis.includes(papel));
   const atual = abas.find((a) => a.id === aba) ?? abas[0];
-  const ctx: Contexto = { api, papel, aoSessaoCair };
+  const ctx: Contexto = { api, papel, matricula: sessao.colaborador.matricula, aoSessaoCair };
 
   return (
     <div className="layout">
@@ -94,6 +96,7 @@ export function App() {
           </div>
         </div>
         {atual.id === 'setores' ? <Setores ctx={ctx} /> : null}
+        {atual.id === 'boa' ? <BoaDoDia ctx={ctx} /> : null}
         {atual.id === 'equipe' ? <Equipe ctx={ctx} /> : null}
         {atual.id === 'acessos' ? <Acessos ctx={ctx} /> : null}
         {atual.id === 'alertas' ? <Alertas ctx={ctx} /> : null}

@@ -1,4 +1,4 @@
-import { EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, RespostaAcesso } from './tipos';
+import { EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, RespostaAcesso, ResultadoFalta, Tarefa } from './tipos';
 
 export class ErroApi extends Error {
   constructor(
@@ -59,6 +59,10 @@ export function criarApi(opcoes: OpcoesApi) {
       chamar<RespostaAcesso>('POST', '/acesso/ativar', { matricula: matricula.trim(), codigo: codigo.trim(), palavraSecreta }),
     ficha: (codigoLido: string) => chamar<Ficha>('GET', `/produtos/ficha/${encodeURIComponent(codigoLido.trim())}`),
     buscar: (termo: string) => chamar<ItemBusca[]>('GET', `/produtos?q=${encodeURIComponent(termo)}`),
+    minhasTarefas: () => chamar<Tarefa[]>('GET', '/tarefas/minhas'),
+    concluirTarefa: (id: string, resultado: 'feito' | 'sem_produto', observacao?: string) =>
+      chamar<{ tarefa: Tarefa; falta: ResultadoFalta | null }>('POST', `/tarefas/${encodeURIComponent(id)}/concluir`, { resultado, observacao }),
+    registrarFalta: (produto: string) => chamar<ResultadoFalta>('POST', '/faltas', { produto }),
     lerEtiqueta: (codigoLido: string) => chamar<LeituraEtiqueta>('GET', `/etiquetas/ler/${encodeURIComponent(codigoLido.trim())}`),
     guardar: (volume: string, endereco: string) =>
       chamar<{ volume: EtiquetaVolume; movido: boolean }>('POST', '/etiquetas/guardar', { volume: volume.trim(), endereco: endereco.trim() }),

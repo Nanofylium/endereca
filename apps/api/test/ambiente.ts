@@ -10,4 +10,4 @@ export const configTeste: Config = {
 };
 
 export const TABELAS = `lojas, colaboradores, aparelhos, codigos_ativacao, tentativas_acesso, avisos_lider, auditoria,
-  produtos, enderecos_produto, vendas_diarias, lotes_produto, apreciacao_produto, locais, volumes`;
+  produtos, enderecos_produto, vendas_diarias, lotes_produto, apreciacao_produto, locais, volumes, tarefas, faltas`;

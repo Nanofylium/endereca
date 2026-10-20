@@ -10,13 +10,14 @@ import { GerenteModule } from './gerente/gerente.module';
 import { LiderModule } from './lider/lider.module';
 import { ProdutosModule } from './produtos/produtos.module';
 import { RhModule } from './rh/rh.module';
+import { TarefasModule } from './tarefas/tarefas.module';
 
 @Module({})
 export class AppModule {
   static com(config: Config): DynamicModule {
     return {
       module: AppModule,
-      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule],
+      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule, TarefasModule],
     };
   }
 }

@@ -3,6 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { Api, ErroApi } from '../api';
 import { Botao } from '../componentes/Botao';
 import { Cabecalho } from '../componentes/Cabecalho';
+import { MinhasTarefas } from '../componentes/MinhasTarefas';
 import { cores } from '../tema';
 import { Colaborador, ItemBusca } from '../tipos';
 
@@ -58,6 +59,7 @@ export function Inicio(props: {
         keyExtractor={(item) => item.sku}
         ListHeaderComponent={
           <View style={{ gap: 16 }}>
+            <MinhasTarefas api={props.api} aoErro={props.aoErro} />
             <Botao titulo="Escanear QR Code ou código de barras" onPress={props.aoEscanear} />
             <Botao titulo="Guardar caixa ou palete" variante="escuro" onPress={props.aoGuardar} />
             <View style={{ gap: 8 }}>
@@ -72,6 +74,9 @@ export function Inicio(props: {
                 autoCorrect={false}
               />
             </View>
+            <Text style={estilos.dica}>
+              Gôndola vazia e nada para escanear? Bipe a etiqueta do endereço na prateleira ou busque pelo nome, e toque em "Não tem na gôndola" na ficha.
+            </Text>
             {aviso ? <Text style={estilos.aviso}>{aviso}</Text> : null}
           </View>
         }
@@ -93,6 +98,7 @@ const estilos = StyleSheet.create({
   rotulo: { fontSize: 14, fontWeight: '600', color: cores.textoSecundario },
   busca: { height: 56, borderRadius: 14, borderWidth: 2, borderColor: '#C9D2E0', backgroundColor: cores.branco, fontSize: 17, paddingHorizontal: 16, color: cores.texto },
   aviso: { fontSize: 15, color: cores.textoApagado },
+  dica: { fontSize: 13, color: cores.textoApagado, lineHeight: 19 },
   item: { backgroundColor: cores.cartao, borderRadius: 14, borderWidth: 1, borderColor: cores.borda, padding: 16, minHeight: 64, gap: 2 },
   itemNome: { fontSize: 16, fontWeight: '600', color: cores.texto },
   itemInfo: { fontSize: 13, color: cores.textoApagado },
