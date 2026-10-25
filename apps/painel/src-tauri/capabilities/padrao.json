@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "padrao",
+  "description": "A janela principal não recebe nenhuma permissão nativa.",
+  "windows": ["principal"],
+  "permissions": []
+}
