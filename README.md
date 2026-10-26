@@ -53,7 +53,9 @@ O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor:
 | `GET /produtos?q=` | Busca por nome, marca, SKU ou EAN |
 | `GET /produtos/ficha/:codigo` | Ficha completa a partir do QR (`ENDERECA:P:<sku>`), EAN ou SKU |
 
-A ficha traz o endereço R- na área de venda, a quantidade na gôndola, os endereços de estoque, os dias sem venda, a apreciação do público (nota de 0 a 5), as vendas dos últimos 7 dias, a previsão de ruptura e o lote com validade e fornecedor.
+A ficha traz o endereço R- na área de venda, a quantidade na gôndola, os endereços de estoque, os dias sem venda, a apreciação do público (nota de 0 a 5), as vendas dos últimos 7 dias, a previsão de ruptura e o lote com validade e fornecedor. Também mostra a leitura (QR, código de barras ou digitado, quantas vezes foi bipado no dia e quem bipou antes), o estoque total em unidades e embalagens, os locais vinculados, o preço da embalagem e da unidade, a classe do produto, o código interno, o setor SAVE, lastro e altura do palete, a vida útil, a idade do estoque (há quantos dias chegou a caixa mais antiga), a última compra, a última venda e os conjuntos de que o produto faz parte.
+
+O ERP manda esses dados em `POST /erp/produtos`: `codigoInterno`, `classe`, `setorSave`, `unidadesEmbalagem`, `lastro`, `altura`, `vidaUtilDias`, `conjuntos` (`codigo`, `nome`, `quantidade`) e, por loja, `lojas` (`lojaId`, `precoUnidade`, `precoEmbalagem`, `ultimaCompraEm`, `ultimaCompraQuantidade`).
 
 ## Etiquetas e cadastro dos itens
 

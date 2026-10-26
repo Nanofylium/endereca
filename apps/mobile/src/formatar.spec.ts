@@ -1,4 +1,4 @@
-import { dataCurta, diaDaSemana, formatarEndereco, notaComVirgula, textoDiasSemVenda } from './formatar';
+import { dataCurta, diaDaSemana, formatarEndereco, notaComVirgula, reais, textoDiasSemVenda, textoIdade, textoLeitura } from './formatar';
 
 describe('formatação', () => {
   it('monta o endereço só com as partes existentes', () => {
@@ -18,5 +18,14 @@ describe('formatação', () => {
     expect(notaComVirgula(4.6)).toBe('4,6');
     expect(dataCurta('2027-12-31')).toBe('31/12/2027');
     expect(diaDaSemana('2026-10-19')).toBe('seg');
+  });
+
+  it('formata preço, leitura e idade do estoque', () => {
+    expect(reais(159.9)).toBe('R$ 159,90');
+    expect(reais(1234.5)).toBe('R$ 1.234,50');
+    expect(reais(null)).toBe('—');
+    expect(textoLeitura({ forma: 'ean', em: '', leiturasHoje: 3, anterior: null })).toBe('Código de barras · 3ª leitura hoje');
+    expect(textoIdade(0)).toBe('chegou hoje');
+    expect(textoIdade(12)).toBe('12 dias');
   });
 });

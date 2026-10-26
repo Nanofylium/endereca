@@ -5,7 +5,7 @@ import { Botao } from '../componentes/Botao';
 import { Cabecalho } from '../componentes/Cabecalho';
 import { AvisoFalta } from '../componentes/AvisoFalta';
 import { Cartao } from '../componentes/Cartao';
-import { ALERTA_GRAVE, dataCurta, diaDaSemana, formatarEndereco, NOME_TIPO, notaComVirgula, textoDiasSemVenda } from '../formatar';
+import { ALERTA_GRAVE, dataCurta, diaDaSemana, formatarEndereco, NOME_TIPO, notaComVirgula, reais, textoDiasSemVenda, textoIdade, textoLeitura } from '../formatar';
 import { cores } from '../tema';
 import { ResultadoFalta, Ficha as TipoFicha } from '../tipos';
 
@@ -79,6 +79,12 @@ export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; a
             SKU {ficha.produto.sku}
             {ficha.produto.ean ? ` · EAN ${ficha.produto.ean}` : ''}
           </Text>
+          <Text style={estilos.apagado}>
+            Leitura: {textoLeitura(ficha.leitura)}
+            {ficha.leitura.anterior
+              ? ` · antes: ${ficha.leitura.anterior.nome ?? 'outro aparelho'} às ${new Date(ficha.leitura.anterior.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+              : ''}
+          </Text>
         </Cartao>
 
         <Cartao titulo="Na área de venda" estilo={{ borderWidth: 2, borderColor: cores.verde }}>
@@ -132,9 +138,17 @@ export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; a
           </View>
         </Cartao>
 
-        <Cartao titulo="No estoque">
-          {ficha.estoque.length === 0 ? <Text style={estilos.textoClaro}>Sem endereço de estoque.</Text> : null}
-          {ficha.estoque.map((e, i) => (
+        <Cartao titulo="Estoque">
+          <Text style={estilos.numero}>{ficha.estoqueTotal.unidades ?? '—'} un.</Text>
+          <Text style={estilos.pequeno}>
+            Gôndola {ficha.estoqueTotal.gondola ?? '—'} · estoque {ficha.estoqueTotal.estoque ?? '—'}
+            {ficha.estoqueTotal.embalagens !== null ? ` · ${ficha.estoqueTotal.embalagens} embalagem(ns) fechada(s)` : ''}
+          </Text>
+        </Cartao>
+
+        <Cartao titulo={`Locais vinculados · ${ficha.areaDeVenda.length + ficha.estoque.length}`}>
+          {ficha.areaDeVenda.length + ficha.estoque.length === 0 ? <Text style={estilos.textoClaro}>Nenhum local vinculado.</Text> : null}
+          {[...ficha.areaDeVenda, ...ficha.estoque].map((e, i) => (
             <View key={i} style={{ paddingVertical: 6, gap: 2 }}>
               <Text style={estilos.textoClaroForte}>
                 {NOME_TIPO[e.tipo]} · {formatarEndereco(e)}
@@ -158,6 +172,35 @@ export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; a
                   {c.lote ? ` · lote ${c.lote}` : ''}
                 </Text>
               </View>
+            ))}
+          </Cartao>
+        ) : null}
+
+        <Cartao titulo="Cadastro">
+          <Linha rotulo="Código interno" valor={ficha.produto.codigoInterno ?? '—'} />
+          <Linha rotulo="Classe do produto" valor={ficha.produto.classe ?? '—'} />
+          <Linha rotulo="Setor SAVE" valor={ficha.produto.setorSave ?? '—'} />
+          <Linha rotulo="Embalagem" valor={ficha.produto.unidadesEmbalagem ? `${ficha.produto.unidadesEmbalagem} un.` : '—'} />
+          <Linha rotulo="Preço da embalagem" valor={reais(ficha.preco?.embalagem)} />
+          <Linha rotulo="Preço da unidade" valor={reais(ficha.preco?.unidade)} />
+          <Linha rotulo="Lastro" valor={ficha.produto.lastro ? `${ficha.produto.lastro} cx por camada` : '—'} />
+          <Linha rotulo="Altura" valor={ficha.produto.altura ? `${ficha.produto.altura} camadas` : '—'} />
+          {ficha.palete ? (
+            <Linha rotulo="Palete fechado" valor={`${ficha.palete.caixas} cx${ficha.palete.unidades ? ` · ${ficha.palete.unidades} un.` : ''}`} />
+          ) : null}
+          <Linha rotulo="Vida útil" valor={ficha.produto.vidaUtilDias ? `${ficha.produto.vidaUtilDias} dias` : '—'} />
+          <Linha rotulo="Idade do estoque" valor={ficha.idadeEstoque ? textoIdade(ficha.idadeEstoque.dias) : '—'} />
+          <Linha
+            rotulo="Última compra"
+            valor={ficha.ultimaCompra ? `${dataCurta(ficha.ultimaCompra.data)}${ficha.ultimaCompra.quantidade ? ` · ${ficha.ultimaCompra.quantidade} un.` : ''}` : '—'}
+          />
+          <Linha rotulo="Última venda" valor={dataCurta(ficha.ultimaVenda)} />
+        </Cartao>
+
+        {ficha.conjuntos.length ? (
+          <Cartao titulo={`Conjuntos · ${ficha.conjuntos.length}`}>
+            {ficha.conjuntos.map((c) => (
+              <Linha key={c.codigo} rotulo={c.nome} valor={`${c.quantidade} un. · ${c.codigo}`} />
             ))}
           </Cartao>
         ) : null}

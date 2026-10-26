@@ -1,4 +1,4 @@
-import { Alerta, Endereco, TipoEndereco } from './tipos';
+import { Alerta, Endereco, Leitura, TipoEndereco } from './tipos';
 
 export const NOME_TIPO: Record<TipoEndereco, string> = {
   venda: 'Área de venda',
@@ -40,3 +40,23 @@ export function dataCurta(dia: string | null): string {
 }
 
 export const ALERTA_GRAVE: Record<Alerta, boolean> = { parado: true, repor_agora: true, ok: false, sem_dados: false };
+
+/** 159.9 → "R$ 159,90" */
+export function reais(valor: number | null | undefined): string {
+  if (valor === null || valor === undefined) return '—';
+  const [inteiro, centavos] = valor.toFixed(2).split('.');
+  return `R$ ${inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${centavos}`;
+}
+
+const FORMA_LEITURA: Record<Leitura['forma'], string> = { qr: 'QR Code', ean: 'Código de barras', sku: 'Código digitado' };
+
+/** "QR Code · 3ª leitura hoje" */
+export function textoLeitura(l: Leitura): string {
+  return `${FORMA_LEITURA[l.forma]} · ${l.leiturasHoje}ª leitura hoje`;
+}
+
+/** 0 → "chegou hoje", 1 → "1 dia", 12 → "12 dias" */
+export function textoIdade(dias: number): string {
+  if (dias === 0) return 'chegou hoje';
+  return dias === 1 ? '1 dia' : `${dias} dias`;
+}

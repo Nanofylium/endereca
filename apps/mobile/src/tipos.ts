@@ -28,7 +28,30 @@ export interface Endereco {
 export type Alerta = 'parado' | 'repor_agora' | 'ok' | 'sem_dados';
 
 export interface Ficha {
-  produto: { sku: string; ean: string | null; nome: string; marca: string | null; departamento: string };
+  produto: {
+    sku: string;
+    ean: string | null;
+    nome: string;
+    marca: string | null;
+    departamento: string;
+    codigoInterno: string | null;
+    classe: string | null;
+    setorSave: string | null;
+    unidadesEmbalagem: number | null;
+    /** Caixas por camada do palete. */
+    lastro: number | null;
+    /** Camadas por palete. */
+    altura: number | null;
+    vidaUtilDias: number | null;
+  };
+  leitura: Leitura;
+  estoqueTotal: { unidades: number | null; gondola: number | null; estoque: number | null; embalagens: number | null };
+  preco: { unidade: number | null; embalagem: number | null; atualizadoEm: string } | null;
+  ultimaCompra: { data: string; quantidade: number | null } | null;
+  ultimaVenda: string | null;
+  palete: { lastro: number; altura: number; caixas: number; unidades: number | null } | null;
+  idadeEstoque: { desde: string; dias: number } | null;
+  conjuntos: { codigo: string; nome: string; quantidade: number }[];
   areaDeVenda: Endereco[];
   quantidadeGondola: number | null;
   estoque: Endereco[];
@@ -40,6 +63,13 @@ export interface Ficha {
   lote: { lote: string; validade: string | null; fornecedor: string | null; proximaEntrega: string | null } | null;
   /** Caixas guardadas no estoque, na ordem em que devem sair (validade mais próxima primeiro). */
   caixas: Caixa[];
+}
+
+export interface Leitura {
+  forma: 'qr' | 'ean' | 'sku';
+  em: string;
+  leiturasHoje: number;
+  anterior: { em: string; nome: string | null } | null;
 }
 
 export interface Caixa {
