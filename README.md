@@ -42,6 +42,7 @@ O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor:
 | `GET /etiquetas/volumes/aguardando` | Volumes recebidos que ainda não foram guardados |
 | `GET /etiquetas/ler/:codigo` | Diz o que foi bipado: endereço (com o que há nele), volume ou produto |
 | `POST /etiquetas/guardar` | Bipou o volume e o endereço: registra onde o produto está |
+| `POST /etiquetas/baixar` | A caixa ou o palete acabou: sai do estoque e do endereço |
 | `POST /tarefas/boa-do-dia` | Gerente: envia a Boa do Dia para o setor |
 | `GET /tarefas` | Líder e gerente: Boa do Dia do dia, com quem está e em que pé |
 | `POST /tarefas/:id/atribuir` | Líder: escolhe quem da equipe vai preparar |
@@ -61,6 +62,9 @@ Ninguém cadastra produto à mão: o catálogo vem do ERP por `POST /erp/produto
 - **Etiqueta de endereço** (`ENDERECA:L:<código>`): fixa em cada lugar (R-07 módulo 5 nível 3, Rua B 04, gaveta 14). O líder gera em lote no painel, com faixas como módulos 1-10 e níveis 1-4.
 - **Etiqueta de volume** (`ENDERECA:V:<código>`): colada em cada caixa ou palete no recebimento, com produto, quantidade, lote e validade.
 - **Endereçamento**: no app, o repositor bipa o volume e depois o endereço. O produto passa a constar ali com a quantidade do volume; se o volume já estava em outro lugar, a quantidade sai de lá.
+
+- **Achar uma caixa**: a ficha do produto lista as caixas guardadas com o endereço de cada uma, a de validade mais próxima primeiro ("pegue esta primeiro"). Bipar a etiqueta de uma caixa mostra onde ela está registrada.
+- **Baixa**: quando a caixa acaba, o repositor bipa a etiqueta e toca em "A caixa acabou". A quantidade sai do endereço e a caixa some da ficha.
 
 O código impresso embaixo do QR usa só letras e números fáceis de ler (sem 0, O, 1, I e L), para digitar quando a etiqueta estiver danificada.
 

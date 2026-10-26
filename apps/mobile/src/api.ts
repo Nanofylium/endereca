@@ -66,6 +66,7 @@ export function criarApi(opcoes: OpcoesApi) {
     lerEtiqueta: (codigoLido: string) => chamar<LeituraEtiqueta>('GET', `/etiquetas/ler/${encodeURIComponent(codigoLido.trim())}`),
     guardar: (volume: string, endereco: string) =>
       chamar<{ volume: EtiquetaVolume; movido: boolean }>('POST', '/etiquetas/guardar', { volume: volume.trim(), endereco: endereco.trim() }),
+    baixarVolume: (volume: string) => chamar<{ volume: EtiquetaVolume }>('POST', '/etiquetas/baixar', { volume: volume.trim() }),
   };
 }
 

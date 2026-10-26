@@ -32,6 +32,24 @@ Pesquisa feita em 25/10/2026 no GitHub. A licença de cada projeto foi conferida
 
 Modelos de linguagem da família Qwen (Alibaba) também servem para resumir faltas e alertas para o gerente, mas a licença muda de modelo para modelo: a maior parte é Apache-2.0, e alguns tamanhos usam a licença própria "Qwen", com restrições. Se forem usados, rodam no servidor e cada modelo tem a licença conferida antes.
 
+## Logística e reposição
+
+Sistemas completos de armazém (WMS) de código aberto, a maioria chineses. Todos são programas inteiros em outras linguagens (Python, Java, C#), com banco e telas próprios. Juntar um deles ao Endereça significaria manter dois sistemas. O caminho escolhido é trazer as ideias que eles já provaram e implementá-las no nosso código: etiqueta por volume (o que eles chamam de LPN), endereçamento bipando volume e local, saída pela validade mais próxima (FEFO), baixa de volume e reposição por mínimo e máximo.
+
+| Projeto | Origem | Licença | Para quê |
+| --- | --- | --- | --- |
+| [GreaterWMS](https://github.com/GreaterWMS/GreaterWMS) | China, nascido na logística pós-venda da Ford Ásia-Pacífico | Apache-2.0 | Referência de recebimento, armazenagem e inventário. |
+| [ModernWMS](https://github.com/fjykTec/ModernWMS) | China (fjykTec) | Apache-2.0 | Referência de modelo de armazém, área e posição. |
+| [Open WES](https://github.com/jingsewu/open-wes) | China | MIT | Referência de execução de tarefas no armazém. |
+| [KopSoftWms](https://github.com/lysilver/KopSoftWms) | China | MIT | Referência de entrada, saída e inventário. |
+| [JeecgBoot](https://github.com/jeecgboot/JeecgBoot) | China (JEECG) | Apache-2.0 | Plataforma de baixo código; não serve para o Endereça, que já tem a própria API. |
+| [OpenWMS](https://github.com/openwms/org.openwms) | Alemanha | Apache-2.0 | Referência de modelo de dados de fluxo de material. |
+| [Google OR-Tools](https://github.com/google/or-tools) | Google | Apache-2.0 | Otimização: ordem de coleta e rota no depósito, para quando houver volume que justifique. |
+
+O [wms-ruoyi](https://github.com/zccbbg/wms-ruoyi) aparece com licença "Other" no GitHub, sem permissão clara de uso comercial, e fica de fora.
+
+O que já entrou no Endereça a partir dessas ideias: etiqueta por caixa e por endereço, endereçamento bipando os dois, lista de caixas na ficha pela validade mais próxima e baixa da caixa vazia. O próximo passo natural é a reposição por mínimo e máximo: cadastrar quanto cabe em cada gôndola e gerar a tarefa de reposição sozinha quando ela baixar do mínimo.
+
 ## Inadequados para o Endereça
 
 | Projeto | Licença | Por quê |

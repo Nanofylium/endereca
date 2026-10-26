@@ -38,6 +38,18 @@ export interface Ficha {
   diasSemVenda: number | null;
   previsao: { alerta: Alerta; diasAteEsvaziar: number | null; mensagem: string };
   lote: { lote: string; validade: string | null; fornecedor: string | null; proximaEntrega: string | null } | null;
+  /** Caixas guardadas no estoque, na ordem em que devem sair (validade mais próxima primeiro). */
+  caixas: Caixa[];
+}
+
+export interface Caixa {
+  codigo: string;
+  quantidade: number;
+  lote: string | null;
+  validade: string | null;
+  recebidoEm: string;
+  nomeTipo: string;
+  descricao: string;
 }
 
 export interface ItemBusca {
@@ -65,6 +77,7 @@ export interface EtiquetaVolume {
   validade: string | null;
   recebidoEm: string;
   guardado: { local: EtiquetaLocal; em: string; por: string | null } | null;
+  baixadoEm: string | null;
 }
 
 export type LeituraEtiqueta =
