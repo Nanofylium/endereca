@@ -98,7 +98,7 @@ npm install
 npm start          # abre o Expo; use o app Expo Go ou um emulador Android
 ```
 
-O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http://10.0.2.2:3000` é a API rodando no computador, vista do emulador Android). Como a API só aceita aparelhos autorizados, cadastre o identificador do celular ou emulador antes de entrar.
+O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http://10.0.2.2:3000` é a API rodando no computador, vista do emulador Android). No build de distribuição ele vem de `ENDERECA_API_URL` e precisa ser https. Como a API só aceita aparelhos autorizados, cadastre o identificador do celular ou emulador antes de entrar.
 
 ## Painel do líder e do gerente
 
@@ -110,6 +110,8 @@ cp .env.example .env   # VITE_API_URL, padrão http://localhost:3000
 npm install
 npm run dev            # http://localhost:5173
 ```
+
+Para o painel como programa do Windows, `npm run desktop` abre a janela em desenvolvimento e `npm run desktop:build` gera o instalador (precisa do Rust).
 
 O navegador gera um identificador `WEB-...`, mostrado na tela de login. Cadastre-o com `npm run cadastrar-aparelho` na API e inclua a origem do painel em `ORIGENS_PAINEL`.
 
@@ -123,6 +125,12 @@ Os testes de ponta a ponta usam um PostgreSQL de verdade, apontado por `TEST_DAT
 cd apps/api
 TEST_DATABASE_URL=postgres://endereca:endereca@localhost:5432/endereca_test npm test
 ```
+
+## Distribuição
+
+O APK do app e o instalador `.exe` do painel saem pelo workflow **Distribuição**, sem código-fonte: o app com bytecode Hermes e R8, o painel com Tauri e o front minificado dentro do binário. A API não é entregue, roda no servidor do autor. Como gerar, configurar a keystore e os limites dessa proteção estão em [docs/distribuicao-e-protecao.md](docs/distribuicao-e-protecao.md). Os projetos abertos avaliados para o Endereça, com as licenças, estão em [docs/projetos-abertos.md](docs/projetos-abertos.md).
+
+O CI confere as licenças das dependências de cada app com `node scripts/licencas.mjs <pasta>` e falha em GPL, AGPL, LGPL ou pacote sem licença.
 
 ## Especificação e protótipo
 

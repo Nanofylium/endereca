@@ -5,8 +5,11 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "jsEngine": "hermes",
     "android": {
       "package": "br.com.endereca.repositor",
+      "versionCode": 1,
+      "allowBackup": false,
       "permissions": [
         "android.permission.CAMERA"
       ]

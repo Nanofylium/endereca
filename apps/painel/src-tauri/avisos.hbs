@@ -1,0 +1,9 @@
+Avisos de terceiros (componentes nativos do painel)
+
+{{#each licenses}}
+------------------------------------------------------------------------------
+{{name}}: {{#each used_by}}{{crate.name}}@{{crate.version}} {{/each}}
+
+{{text}}
+
+{{/each}}

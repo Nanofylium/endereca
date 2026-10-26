@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "desktop": "tauri dev",
+    "desktop:build": "tauri build"
   },
   "dependencies": {
     "qrcode": "^1.5.4",
@@ -16,6 +18,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",

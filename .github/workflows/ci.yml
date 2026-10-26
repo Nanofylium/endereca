@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      - run: node ../../scripts/licencas.mjs .
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -48,6 +49,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      - run: node ../../scripts/licencas.mjs .
       - run: npm run typecheck
       - run: npm test
       - run: npx expo export --platform android --output-dir /tmp/expo-export
@@ -65,6 +67,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      - run: node ../../scripts/licencas.mjs .
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
