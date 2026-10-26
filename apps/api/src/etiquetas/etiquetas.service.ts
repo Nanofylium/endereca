@@ -31,6 +31,7 @@ interface LinhaVolume {
   local_id: string | null;
   guardado_em: Date | null;
   guardado_por: string | null;
+  baixado_em: Date | null;
 }
 
 export interface EtiquetaLocal {
@@ -51,10 +52,12 @@ export interface EtiquetaVolume {
   validade: string | null;
   recebidoEm: Date;
   guardado: { local: EtiquetaLocal; em: Date; por: string | null } | null;
+  /** Quando a caixa acabou e alguém deu baixa. Depois disso ela não conta mais no estoque. */
+  baixadoEm: Date | null;
 }
 
 const COLUNAS_LOCAL = 'id, codigo, tipo, rua, modulo, nivel, posicao';
-const SELECT_VOLUME = `SELECT v.id, v.codigo, v.loja_id, v.sku, p.nome, v.quantidade, v.lote, v.validade, v.recebido_em, v.local_id, v.guardado_em, v.guardado_por
+const SELECT_VOLUME = `SELECT v.id, v.codigo, v.loja_id, v.sku, p.nome, v.quantidade, v.lote, v.validade, v.recebido_em, v.local_id, v.guardado_em, v.guardado_por, v.baixado_em
   FROM volumes v JOIN produtos p ON p.sku = v.sku`;
 
 const etiquetaLocal = (l: LinhaLocal): EtiquetaLocal => ({
@@ -142,7 +145,7 @@ export class EtiquetasService {
 
   /** Volumes recebidos que ainda não foram bipados num endereço. */
   async aguardando(sessao: SessaoAtual): Promise<EtiquetaVolume[]> {
-    const linhas = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.loja_id = $1 AND v.local_id IS NULL ORDER BY v.recebido_em, v.id LIMIT 200`, [
+    const linhas = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.loja_id = $1 AND v.local_id IS NULL AND v.baixado_em IS NULL ORDER BY v.recebido_em, v.id LIMIT 200`, [
       sessao.loja,
     ]);
     return linhas.map((v) => this.etiquetaVolume(v, null));
@@ -187,6 +190,7 @@ export class EtiquetasService {
     const resultado = await this.db.transacao(async (cliente) => {
       const [v] = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.codigo = $1 AND v.loja_id = $2 FOR UPDATE OF v`, [volume.codigo, sessao.loja], cliente);
       if (!v) throw new ErroAcesso(HttpStatus.NOT_FOUND, 'volume_inexistente', 'Etiqueta de volume desconhecida nesta loja.');
+      if (v.baixado_em) throw new ErroAcesso(HttpStatus.CONFLICT, 'volume_baixado', 'Esta caixa já teve baixa. Para guardar produto novo, use a etiqueta do recebimento.');
       const local = await this.localPorCodigo(sessao.loja, endereco.codigo, cliente);
       if (v.local_id === local.id) throw new ErroAcesso(HttpStatus.CONFLICT, 'ja_guardado', 'Este volume já está registrado neste endereço.');
 
@@ -208,6 +212,34 @@ export class EtiquetasService {
     });
     const [atualizado] = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.id = $1`, [resultado.v.id]);
     return { volume: await this.comLocal(atualizado), movido: resultado.mudou };
+  }
+
+  /** A caixa acabou: sai do estoque e a quantidade dela sai do endereço onde estava. */
+  async baixar(sessao: SessaoAtual, codigoVolume: string) {
+    const volume = interpretarEtiqueta(codigoVolume);
+    if (volume.tipo !== 'volume') throw new ErroAcesso(HttpStatus.BAD_REQUEST, 'nao_e_volume', 'Bipe a etiqueta da caixa ou do palete.');
+
+    const v = await this.db.transacao(async (cliente) => {
+      const [v] = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.codigo = $1 AND v.loja_id = $2 FOR UPDATE OF v`, [volume.codigo, sessao.loja], cliente);
+      if (!v) throw new ErroAcesso(HttpStatus.NOT_FOUND, 'volume_inexistente', 'Etiqueta de volume desconhecida nesta loja.');
+      if (v.baixado_em) throw new ErroAcesso(HttpStatus.CONFLICT, 'volume_baixado', 'Esta caixa já teve baixa.');
+      if (v.local_id) {
+        const [local] = await this.db.query<LinhaLocal>(`SELECT ${COLUNAS_LOCAL} FROM locais WHERE id = $1`, [v.local_id], cliente);
+        await this.somarNoEndereco(cliente, sessao, v.sku, local, -v.quantidade);
+      }
+      await this.db.query('UPDATE volumes SET baixado_em = now(), baixado_por = $1 WHERE id = $2', [sessao.sub, v.id], cliente);
+      return v;
+    });
+
+    await this.auditoria.registrar({
+      autor: sessao.sub,
+      acao: 'volume.baixado',
+      lojaId: sessao.loja,
+      aparelhoId: sessao.ap,
+      detalhes: { volume: v.codigo, sku: v.sku, quantidade: v.quantidade },
+    });
+    const [atualizado] = await this.db.query<LinhaVolume>(`${SELECT_VOLUME} WHERE v.id = $1`, [v.id]);
+    return { volume: await this.comLocal(atualizado) };
   }
 
   private async somarNoEndereco(cliente: PoolClient, sessao: SessaoAtual, sku: string, local: LinhaLocal, unidades: number) {
@@ -264,6 +296,7 @@ export class EtiquetasService {
       validade: v.validade,
       recebidoEm: v.recebido_em,
       guardado: local && v.guardado_em ? { local: etiquetaLocal(local), em: v.guardado_em, por: v.guardado_por } : null,
+      baixadoEm: v.baixado_em,
     };
   }
 }

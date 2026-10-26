@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ErroAcesso } from '../auth/acesso.service';
 import { DbService } from '../db/db.service';
+import { descreverLocal, NOME_TIPO } from '../etiquetas/codigos';
 import { calcularIndicadores, hojeNaLoja, interpretarCodigoLido } from './indicadores';
 
 interface LinhaEndereco {
@@ -44,7 +45,7 @@ export class ProdutosService {
     );
     if (!produto) throw new ErroAcesso(HttpStatus.NOT_FOUND, 'produto_nao_encontrado', 'Código inválido ou item descontinuado.');
 
-    const [enderecos, vendas, ultima, apreciacao, lote] = await Promise.all([
+    const [enderecos, vendas, ultima, apreciacao, lote, caixas] = await Promise.all([
       this.db.query<LinhaEndereco>(
         `SELECT tipo, rua, modulo, nivel, posicao, quantidade, principal, confirmado_em, confirmado_por
          FROM enderecos_produto WHERE sku = $1 AND loja_id = $2
@@ -66,6 +67,26 @@ export class ProdutosService {
       this.db.query<{ lote: string; validade: string | null; fornecedor: string | null; proxima_entrega: Date | null }>(
         `SELECT lote, validade, fornecedor, proxima_entrega FROM lotes_produto
          WHERE sku = $1 AND loja_id = $2 ORDER BY validade ASC NULLS LAST LIMIT 1`,
+        [produto.sku, lojaId],
+      ),
+      // Caixas guardadas, na ordem em que devem sair: validade mais próxima primeiro, depois a que chegou antes.
+      this.db.query<{
+        codigo: string;
+        quantidade: number;
+        lote: string | null;
+        validade: string | null;
+        recebido_em: Date;
+        tipo: string;
+        rua: string;
+        modulo: string | null;
+        nivel: string | null;
+        posicao: string | null;
+      }>(
+        `SELECT v.codigo, v.quantidade, v.lote, v.validade, v.recebido_em, l.tipo, l.rua, l.modulo, l.nivel, l.posicao
+         FROM volumes v JOIN locais l ON l.id = v.local_id
+         WHERE v.sku = $1 AND v.loja_id = $2 AND v.baixado_em IS NULL AND l.tipo <> 'venda'
+         ORDER BY v.validade ASC NULLS LAST, v.recebido_em, v.id
+         LIMIT 50`,
         [produto.sku, lojaId],
       ),
     ]);
@@ -94,6 +115,15 @@ export class ProdutosService {
       lote: lote[0]
         ? { lote: lote[0].lote, validade: lote[0].validade, fornecedor: lote[0].fornecedor, proximaEntrega: lote[0].proxima_entrega }
         : null,
+      caixas: caixas.map((c) => ({
+        codigo: c.codigo,
+        quantidade: c.quantidade,
+        lote: c.lote,
+        validade: c.validade,
+        recebidoEm: c.recebido_em,
+        nomeTipo: NOME_TIPO[c.tipo] ?? c.tipo,
+        descricao: descreverLocal(c),
+      })),
     };
   }
 }

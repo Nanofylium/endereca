@@ -76,3 +76,10 @@ export class GuardarVolumeDto {
   @Length(1, 60)
   endereco!: string;
 }
+
+export class BaixarVolumeDto {
+  /** QR da etiqueta da caixa ou do palete que acabou. */
+  @IsString()
+  @Length(1, 60)
+  volume!: string;
+}

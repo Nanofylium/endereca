@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Papeis, RequisicaoAutenticada, SessaoGuard } from '../auth/sessao.guard';
-import { CriarLocaisDto, GuardarVolumeDto, ReceberVolumesDto } from './etiquetas.dto';
+import { BaixarVolumeDto, CriarLocaisDto, GuardarVolumeDto, ReceberVolumesDto } from './etiquetas.dto';
 import { EtiquetasService } from './etiquetas.service';
 
 @Controller('etiquetas')
@@ -42,5 +42,12 @@ export class EtiquetasController {
   @HttpCode(HttpStatus.OK)
   guardar(@Req() req: RequisicaoAutenticada, @Body() dados: GuardarVolumeDto) {
     return this.etiquetas.guardar(req.sessao, dados.volume, dados.endereco);
+  }
+
+  /** A caixa ou o palete acabou: bipa a etiqueta e dá baixa. */
+  @Post('baixar')
+  @HttpCode(HttpStatus.OK)
+  baixar(@Req() req: RequisicaoAutenticada, @Body() dados: BaixarVolumeDto) {
+    return this.etiquetas.baixar(req.sessao, dados.volume);
   }
 }

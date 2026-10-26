@@ -144,6 +144,24 @@ export function Ficha(props: { api: Api; codigo: string; aoVoltar: () => void; a
           ))}
         </Cartao>
 
+        {ficha.caixas.length ? (
+          <Cartao titulo={`Caixas no estoque · ${ficha.caixas.length}`}>
+            {ficha.caixas.map((c, i) => (
+              <View key={c.codigo} style={[estilos.caixa, i === 0 && estilos.caixaPrimeira]}>
+                {i === 0 ? <Text style={estilos.pegue}>Pegue esta primeiro</Text> : null}
+                <Text style={estilos.textoClaroForte}>
+                  {c.nomeTipo} · {c.descricao}
+                </Text>
+                <Text style={estilos.textoClaro}>
+                  Caixa {c.codigo} · {c.quantidade} un.
+                  {c.validade ? ` · vence ${dataCurta(c.validade)}` : ''}
+                  {c.lote ? ` · lote ${c.lote}` : ''}
+                </Text>
+              </View>
+            ))}
+          </Cartao>
+        ) : null}
+
         {ficha.lote ? (
           <Cartao titulo="Lote e fornecedor">
             <Linha rotulo="Lote" valor={ficha.lote.lote} />
@@ -183,5 +201,8 @@ const estilos = StyleSheet.create({
   previsao: { borderRadius: 10, padding: 10, marginTop: 6 },
   textoClaro: { color: cores.textoApagado, fontSize: 13 },
   textoClaroForte: { color: cores.texto, fontSize: 15, fontWeight: '600' },
+  caixa: { paddingVertical: 8, gap: 2, borderTopWidth: 1, borderTopColor: cores.borda },
+  caixaPrimeira: { borderTopWidth: 0, backgroundColor: cores.confirmarFundo, borderRadius: 10, paddingHorizontal: 10 },
+  pegue: { fontSize: 12, fontWeight: '700', color: cores.confirmar, textTransform: 'uppercase' },
   erro: { fontSize: 16, color: cores.laranjaTexto, fontWeight: '600', lineHeight: 22 },
 });

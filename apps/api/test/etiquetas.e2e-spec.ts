@@ -129,6 +129,33 @@ describe('etiquetas de endereço e de volume', () => {
     expect((await repositor.post('/etiquetas/guardar', { volume: caixa1.qr, endereco: gondola.qr })).status).toBe(409);
   });
 
+  it('ficha mostra as caixas pela validade e a caixa vazia tem baixa', async () => {
+    const lider = await ativo('001000');
+    const [deposito] = (await lider.post('/etiquetas/enderecos', { locais: ENDERECOS })).body;
+    const [aereo] = (await lider.post('/etiquetas/enderecos', { locais: [{ tipo: 'aereo', rua: 'Rua C', modulo: '01' }] })).body;
+    const [depois] = (await lider.post('/etiquetas/volumes', { produto: '100245', quantidade: 10, lote: 'L2', validade: '2027-06-01' })).body;
+    const [antes] = (await lider.post('/etiquetas/volumes', { produto: '100245', quantidade: 8, lote: 'L1', validade: '2027-01-15' })).body;
+    await lider.post('/etiquetas/guardar', { volume: depois.qr, endereco: deposito.qr }).expect(200);
+    await lider.post('/etiquetas/guardar', { volume: antes.qr, endereco: aereo.qr }).expect(200);
+
+    let ficha = await lider.get('/produtos/ficha/100245');
+    expect(ficha.body.caixas).toEqual([
+      expect.objectContaining({ codigo: antes.codigo, quantidade: 8, validade: '2027-01-15', nomeTipo: 'Aéreo', descricao: 'Rua C · Módulo 01' }),
+      expect.objectContaining({ codigo: depois.codigo, quantidade: 10, nomeTipo: 'Depósito' }),
+    ]);
+
+    const baixa = await lider.post('/etiquetas/baixar', { volume: antes.qr });
+    expect(baixa.status).toBe(200);
+    expect(baixa.body.volume.baixadoEm).toBeTruthy();
+    ficha = await lider.get('/produtos/ficha/100245');
+    expect(ficha.body.caixas.map((c: { codigo: string }) => c.codigo)).toEqual([depois.codigo]);
+    expect(ficha.body.estoque.find((e: { tipo: string }) => e.tipo === 'aereo').quantidade).toBe(0);
+
+    expect((await lider.post('/etiquetas/baixar', { volume: antes.qr })).body.motivo).toBe('volume_baixado');
+    expect((await lider.post('/etiquetas/guardar', { volume: antes.qr, endereco: deposito.qr })).body.motivo).toBe('volume_baixado');
+    expect((await lider.post('/etiquetas/baixar', { volume: deposito.qr })).body.motivo).toBe('nao_e_volume');
+  });
+
   it('pede a ordem certa: primeiro o volume, depois o endereço', async () => {
     const lider = await ativo('001000');
     const [deposito] = (await lider.post('/etiquetas/enderecos', { locais: ENDERECOS })).body;

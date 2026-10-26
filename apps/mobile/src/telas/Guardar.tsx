@@ -12,7 +12,8 @@ import { Scanner } from './Scanner';
 type Passo =
   | { nome: 'volume' }
   | { nome: 'endereco'; volume: EtiquetaVolume }
-  | { nome: 'feito'; volume: EtiquetaVolume; local: EtiquetaLocal; movido: boolean };
+  | { nome: 'feito'; volume: EtiquetaVolume; local: EtiquetaLocal; movido: boolean }
+  | { nome: 'baixado'; volume: EtiquetaVolume };
 
 /** O código impresso embaixo do QR pode ser digitado sem o prefixo. */
 const completar = (lido: string, prefixo: 'L' | 'V') => (/^ENDERECA:/i.test(lido.trim()) ? lido.trim() : `ENDERECA:${prefixo}:${lido.trim()}`);
@@ -61,6 +62,19 @@ export function Guardar(props: { api: Api; volumeInicial?: string; aoVoltar: () 
     }
   }
 
+  async function baixar(volume: EtiquetaVolume) {
+    setErro('');
+    setCarregando(true);
+    try {
+      const r = await props.api.baixarVolume(volume.qr);
+      setPasso({ nome: 'baixado', volume: r.volume });
+    } catch (e) {
+      falhou(e);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   // Volume lido pelo scanner geral: já começa pedindo o endereço.
   useEffect(() => {
     if (props.volumeInicial) lerVolume(props.volumeInicial);
@@ -84,6 +98,24 @@ export function Guardar(props: { api: Api; volumeInicial?: string; aoVoltar: () 
     );
   }
 
+  if (passo.nome === 'baixado') {
+    return (
+      <View style={{ flex: 1, backgroundColor: cores.fundo }}>
+        <Cabecalho titulo="Caixa com baixa" onVoltar={props.aoVoltar} />
+        <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
+          <View style={estilos.sucesso}>
+            <Text style={estilos.sucessoTitulo}>Baixa registrada</Text>
+            <Text style={estilos.sucessoTexto}>
+              A caixa de {passo.volume.produto} saiu do estoque{passo.volume.guardado ? ` de ${passo.volume.guardado.local.descricao}` : ''}. Pode descartar a etiqueta.
+            </Text>
+          </View>
+          <Botao titulo="Bipar outra caixa" onPress={() => setPasso({ nome: 'volume' })} />
+          <Botao titulo="Voltar ao início" variante="escuro" onPress={props.aoVoltar} />
+        </ScrollView>
+      </View>
+    );
+  }
+
   const volume = passo.nome === 'endereco' ? passo.volume : null;
   return (
     <View style={{ flex: 1, backgroundColor: '#0A0F1A' }}>
@@ -95,6 +127,7 @@ export function Guardar(props: { api: Api; volumeInicial?: string; aoVoltar: () 
               {volume.quantidade} un.{volume.lote ? ` · lote ${volume.lote}` : ''}
               {volume.guardado ? ` · hoje em ${volume.guardado.local.descricao}` : ''}
             </Text>
+            <Botao titulo="A caixa acabou: dar baixa" variante="contorno" carregando={carregando} onPress={() => baixar(volume)} />
           </Cartao>
         </View>
       ) : null}
