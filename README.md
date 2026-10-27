@@ -80,14 +80,6 @@ A etiqueta de papel da prateleira some. O que ela dizia passa a morar no Endere�
 
 A lei de preços (Lei 10.962/2004 e Decreto 5.903/2006) aceita o código de barras no lugar do preço na prateleira desde que haja leitores para o consumidor espalhados pela loja, a uma distância curta de qualquer produto. A quantidade e a posição dos leitores precisam ser confirmadas com o jurídico antes de tirar as etiquetas de uma loja.
 
-## Meeseeks de reposição
-
-Cada gôndola pode ter mínimo e máximo (`POST /reposicao/limites`, líder do setor ou gerente). Quando a quantidade na frente fica abaixo do mínimo, a tarefa de repor nasce sozinha: leva a gôndola até o máximo e já diz de qual caixa tirar, a que vence antes. Quando a gôndola volta ao mínimo, por exemplo quando alguém confere a frente na tela da gôndola, a tarefa se encerra sozinha.
-
-- `GET /reposicao`: reposições abertas. Repositor e líder veem as do próprio setor; a gerente vê todas. Antes de listar, o Endereça confere todas as gôndolas que têm mínimo.
-- `POST /reposicao/:id/pegar`: alguém do setor toma a tarefa para si. Se outra pessoa já pegou, a resposta é 409.
-- `POST /tarefas/:id/concluir` com `feito`: as unidades levadas passam a contar na gôndola. Com `sem_produto`, a falta vai para o líder, e o Meeseeks não volta a nascer para aquele produto no mesmo dia.
-
 ## Boa do Dia e produto em falta
 
 O gerente operacional escolhe o produto da Boa do Dia e o setor. O líder do setor recebe o aviso no painel e escolhe quem da equipe vai preparar; a pessoa vê a tarefa na tela inicial do app, com o endereço da gôndola e onde buscar no estoque, e marca "Feito" ou "Sem produto".

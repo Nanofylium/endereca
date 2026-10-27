@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Papeis, RequisicaoAutenticada, SessaoGuard } from '../auth/sessao.guard';
-import { AtribuirDto, BoaDoDiaDto, ConcluirDto, FaltaDto, LimitesDto } from './tarefas.dto';
+import { AtribuirDto, BoaDoDiaDto, ConcluirDto, FaltaDto } from './tarefas.dto';
 import { TarefasService } from './tarefas.service';
 
 const DIA = /^\d{4}-\d{2}-\d{2}$/;
@@ -40,25 +40,6 @@ export class TarefasController {
   @HttpCode(HttpStatus.OK)
   concluir(@Req() req: RequisicaoAutenticada, @Param('id') id: string, @Body() dados: ConcluirDto) {
     return this.tarefas.concluir(req.sessao, id, dados.resultado, dados.observacao);
-  }
-
-  /** Mínimo e máximo da gôndola: abaixo do mínimo, a reposição nasce sozinha. */
-  @Post('reposicao/limites')
-  @Papeis('lider', 'gerente', 'admin')
-  @HttpCode(HttpStatus.OK)
-  limites(@Req() req: RequisicaoAutenticada, @Body() dados: LimitesDto) {
-    return this.tarefas.definirLimites(req.sessao, dados.produto, dados.minimo, dados.maximo ?? null);
-  }
-
-  @Get('reposicao')
-  reposicoes(@Req() req: RequisicaoAutenticada) {
-    return this.tarefas.reposicoes(req.sessao);
-  }
-
-  @Post('reposicao/:id/pegar')
-  @HttpCode(HttpStatus.OK)
-  pegar(@Req() req: RequisicaoAutenticada, @Param('id') id: string) {
-    return this.tarefas.pegar(req.sessao, id);
   }
 
   /** Não tem o produto na gôndola para escanear. */

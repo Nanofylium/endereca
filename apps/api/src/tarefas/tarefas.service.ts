@@ -8,14 +8,10 @@ import { descreverLocal, NOME_TIPO } from '../etiquetas/codigos';
 import { hojeNaLoja, interpretarCodigoLido } from '../produtos/indicadores';
 import { BoaDoDiaDto } from './tarefas.dto';
 
-export type SituacaoTarefa = 'aguardando_lider' | 'aberta' | 'atribuida' | 'concluida' | 'sem_produto';
-export type TipoTarefa = 'boa_do_dia' | 'reposicao';
+export type SituacaoTarefa = 'aguardando_lider' | 'atribuida' | 'concluida' | 'sem_produto';
 
 interface LinhaTarefa {
   id: string;
-  tipo: TipoTarefa;
-  quantidade: number | null;
-  caixa: string | null;
   sku: string;
   nome: string;
   setor: string;
@@ -39,11 +35,7 @@ export interface LocalComQuantidade {
 
 export interface Tarefa {
   id: string;
-  tipo: TipoTarefa;
-  /** Reposição: quantas unidades levar para a gôndola. */
-  quantidade: number | null;
-  /** Reposição: código da caixa que vence antes, de onde tirar. */
-  caixa: string | null;
+  tipo: 'boa_do_dia';
   sku: string;
   produto: string;
   setor: string;
@@ -72,7 +64,7 @@ export interface Falta {
   observacao: string | null;
 }
 
-const SELECT_TAREFA = `SELECT t.id, t.tipo, t.quantidade, t.caixa, t.sku, p.nome, t.setor, t.dia, t.instrucoes, t.criada_por, t.criada_em, t.responsavel,
+const SELECT_TAREFA = `SELECT t.id, t.sku, p.nome, t.setor, t.dia, t.instrucoes, t.criada_por, t.criada_em, t.responsavel,
     c.nome AS responsavel_nome, t.atribuida_em, t.situacao, t.concluida_em, t.observacao
   FROM tarefas t JOIN produtos p ON p.sku = t.sku LEFT JOIN colaboradores c ON c.matricula = t.responsavel`;
 
@@ -104,7 +96,7 @@ export class TarefasService {
     return this.uma(sessao.loja, criada.id);
   }
 
-  /** Boa do Dia: o líder vê as do próprio setor; gerente e administrador, as da loja toda. */
+  /** O líder vê as tarefas do próprio setor; gerente e administrador, as da loja toda. */
   async listar(sessao: SessaoAtual, dia?: string): Promise<Tarefa[]> {
     const params: unknown[] = [sessao.loja, dia ?? hojeNaLoja()];
     let filtro = '';
@@ -112,7 +104,7 @@ export class TarefasService {
       params.push(sessao.setor ?? '');
       filtro = 'AND lower(trim(t.setor)) = lower(trim($3))';
     }
-    const linhas = await this.db.query<LinhaTarefa>(`${SELECT_TAREFA} WHERE t.loja_id = $1 AND t.dia = $2 AND t.tipo = 'boa_do_dia' ${filtro} ORDER BY t.setor, t.criada_em`, params);
+    const linhas = await this.db.query<LinhaTarefa>(`${SELECT_TAREFA} WHERE t.loja_id = $1 AND t.dia = $2 ${filtro} ORDER BY t.setor, t.criada_em`, params);
     return Promise.all(linhas.map((l) => this.completar(sessao.loja, l)));
   }
 
@@ -163,17 +155,7 @@ export class TarefasService {
         texto,
         id,
       ], cliente);
-      if (resultado === 'sem_produto') {
-        falta = await this.registrarFalta(sessao, tarefa.sku, texto ?? (tarefa.tipo === 'reposicao' ? 'Reposição sem produto' : 'Boa do Dia sem produto'), id, cliente);
-      } else if (tarefa.tipo === 'reposicao' && tarefa.quantidade) {
-        // O que foi levado para a gôndola passa a contar nela, senão o Meeseeks nasceria de novo na hora.
-        await this.db.query(
-          `UPDATE enderecos_produto SET quantidade = COALESCE(quantidade, 0) + $3, confirmado_em = now(), confirmado_por = $4
-           WHERE id = (SELECT id FROM enderecos_produto WHERE sku = $1 AND loja_id = $2 AND tipo = 'venda' ORDER BY principal DESC, id LIMIT 1)`,
-          [tarefa.sku, sessao.loja, tarefa.quantidade, sessao.sub],
-          cliente,
-        );
-      }
+      if (resultado === 'sem_produto') falta = await this.registrarFalta(sessao, tarefa.sku, texto ?? 'Boa do Dia sem produto', id, cliente);
     });
     await this.auditoria.registrar({ autor: sessao.sub, acao: `tarefa.${resultado}`, lojaId: sessao.loja, aparelhoId: sessao.ap, detalhes: { tarefa: id } });
     return { tarefa: await this.uma(sessao.loja, id), falta };
@@ -264,116 +246,6 @@ export class TarefasService {
     }
   }
 
-  /** Líder ou gerente define o mínimo e o máximo da gôndola do produto. */
-  async definirLimites(sessao: SessaoAtual, codigo: string, minimo: number, maximo: number | null) {
-    if (maximo !== null && maximo <= minimo) throw new ErroAcesso(HttpStatus.BAD_REQUEST, 'limites_invalidos', 'O máximo precisa ser maior que o mínimo.');
-    const produto = await this.produto(codigo);
-    this.conferirSetor(sessao, produto.departamento);
-    const [venda] = await this.db.query<{ id: string }>(
-      `UPDATE enderecos_produto SET minimo = $3, maximo = $4
-       WHERE id = (SELECT id FROM enderecos_produto WHERE sku = $1 AND loja_id = $2 AND tipo = 'venda' ORDER BY principal DESC, id LIMIT 1)
-       RETURNING id`,
-      [produto.sku, sessao.loja, minimo, maximo],
-    );
-    if (!venda) throw new ErroAcesso(HttpStatus.NOT_FOUND, 'sem_endereco_venda', 'Este produto ainda não tem lugar na área de venda.');
-    await this.auditoria.registrar({ autor: sessao.sub, acao: 'reposicao.limites', lojaId: sessao.loja, aparelhoId: sessao.ap, detalhes: { sku: produto.sku, minimo, maximo } });
-    return { sku: produto.sku, minimo, maximo, meeseeks: await this.invocarMeeseeks(sessao.loja, produto.sku) };
-  }
-
-  /**
-   * Meeseeks de reposição: abaixo do mínimo, nasce a tarefa de repor com a caixa que vence antes;
-   * de volta ao mínimo, a tarefa aberta se encerra sozinha. Devolve o que aconteceu.
-   */
-  async invocarMeeseeks(lojaId: string, sku: string): Promise<'criada' | 'resolvida' | null> {
-    const [g] = await this.db.query<{ quantidade: number | null; minimo: number | null; maximo: number | null; departamento: string; rua: string; modulo: string | null; nivel: string | null; posicao: string | null }>(
-      `SELECT e.quantidade, e.minimo, e.maximo, p.departamento, e.rua, e.modulo, e.nivel, e.posicao
-       FROM enderecos_produto e JOIN produtos p ON p.sku = e.sku AND p.ativo
-       WHERE e.sku = $1 AND e.loja_id = $2 AND e.tipo = 'venda' ORDER BY e.principal DESC, e.id LIMIT 1`,
-      [sku, lojaId],
-    );
-    if (!g || g.minimo === null || g.quantidade === null) return null;
-    const [aberta] = await this.db.query<{ id: string }>(
-      "SELECT id FROM tarefas WHERE loja_id = $1 AND sku = $2 AND tipo = 'reposicao' AND situacao IN ('aberta', 'atribuida')",
-      [lojaId, sku],
-    );
-
-    if (g.quantidade >= g.minimo) {
-      if (!aberta) return null;
-      await this.db.query(
-        "UPDATE tarefas SET situacao = 'concluida', concluida_em = now(), observacao = 'A gôndola voltou ao mínimo. Missão cumprida.' WHERE id = $1",
-        [aberta.id],
-      );
-      await this.auditoria.registrar({ autor: 'meeseeks', acao: 'reposicao.resolvida', lojaId, detalhes: { tarefa: aberta.id, sku } });
-      return 'resolvida';
-    }
-    if (aberta) return null;
-    // Hoje já foram buscar e não havia produto: a falta está com o líder, não adianta mandar de novo.
-    const [semProduto] = await this.db.query<{ id: string }>(
-      "SELECT id FROM tarefas WHERE loja_id = $1 AND sku = $2 AND tipo = 'reposicao' AND situacao = 'sem_produto' AND dia = $3 LIMIT 1",
-      [lojaId, sku, hojeNaLoja()],
-    );
-    if (semProduto) return null;
-
-    const [caixa] = await this.db.query<{ codigo: string; validade: string | null; tipo: string; rua: string; modulo: string | null; nivel: string | null; posicao: string | null }>(
-      `SELECT v.codigo, v.validade, l.tipo, l.rua, l.modulo, l.nivel, l.posicao FROM volumes v JOIN locais l ON l.id = v.local_id
-       WHERE v.sku = $1 AND v.loja_id = $2 AND v.baixado_em IS NULL AND l.tipo <> 'venda'
-       ORDER BY v.validade ASC NULLS LAST, v.recebido_em, v.id LIMIT 1`,
-      [sku, lojaId],
-    );
-    const quantidade = (g.maximo ?? g.minimo * 2) - g.quantidade;
-    const onde = descreverLocal(g);
-    const instrucoes = caixa
-      ? `Leve ${quantidade} un. para ${onde}. Pegue primeiro a caixa ${caixa.codigo} em ${NOME_TIPO[caixa.tipo] ?? caixa.tipo} · ${descreverLocal(caixa)}${caixa.validade ? ` (vence ${caixa.validade.split('-').reverse().join('/')})` : ''}.`
-      : `Leve ${quantidade} un. para ${onde}. Nenhuma caixa guardada no estoque: confira o depósito.`;
-    const [criada] = await this.db.query<{ id: string }>(
-      `INSERT INTO tarefas (loja_id, tipo, sku, setor, dia, instrucoes, criada_por, situacao, quantidade, caixa)
-       VALUES ($1, 'reposicao', $2, $3, $4, $5, 'meeseeks', 'aberta', $6, $7)
-       ON CONFLICT (loja_id, sku) WHERE tipo = 'reposicao' AND situacao IN ('aberta', 'atribuida') DO NOTHING RETURNING id`,
-      [lojaId, sku, g.departamento, hojeNaLoja(), instrucoes, quantidade, caixa?.codigo ?? null],
-    );
-    if (!criada) return null;
-    await this.auditoria.registrar({ autor: 'meeseeks', acao: 'reposicao.criada', lojaId, detalhes: { tarefa: criada.id, sku, quantidade } });
-    return 'criada';
-  }
-
-  /** Reposições em aberto. Antes de listar, confere todas as gôndolas com mínimo definido. */
-  async reposicoes(sessao: SessaoAtual): Promise<Tarefa[]> {
-    const comMinimo = await this.db.query<{ sku: string }>(
-      "SELECT DISTINCT sku FROM enderecos_produto WHERE loja_id = $1 AND tipo = 'venda' AND minimo IS NOT NULL",
-      [sessao.loja],
-    );
-    for (const { sku } of comMinimo) await this.invocarMeeseeks(sessao.loja, sku);
-
-    const params: unknown[] = [sessao.loja];
-    let filtro = '';
-    if (sessao.papel === 'lider' || sessao.papel === 'repositor') {
-      params.push(sessao.setor ?? '');
-      filtro = 'AND lower(trim(t.setor)) = lower(trim($2))';
-    }
-    const linhas = await this.db.query<LinhaTarefa>(
-      `${SELECT_TAREFA} WHERE t.loja_id = $1 AND t.tipo = 'reposicao' AND t.situacao IN ('aberta', 'atribuida') ${filtro}
-       ORDER BY (t.situacao = 'aberta') DESC, t.criada_em`,
-      params,
-    );
-    return Promise.all(linhas.map((l) => this.completar(sessao.loja, l)));
-  }
-
-  /** Alguém do setor pega a reposição para si. */
-  async pegar(sessao: SessaoAtual, id: string): Promise<Tarefa> {
-    const tarefa = await this.linha(sessao.loja, id);
-    if (tarefa.tipo !== 'reposicao') throw new ErroAcesso(HttpStatus.BAD_REQUEST, 'nao_e_reposicao', 'Só reposições podem ser pegas assim.');
-    if ((sessao.papel === 'repositor' || sessao.papel === 'lider') && !mesmoSetor(sessao.setor, tarefa.setor)) {
-      throw new ErroAcesso(HttpStatus.FORBIDDEN, 'fora_do_setor', 'Esta reposição é de outro setor.');
-    }
-    const [ok] = await this.db.query<{ id: string }>(
-      "UPDATE tarefas SET responsavel = $1, atribuida_por = $1, atribuida_em = now(), situacao = 'atribuida' WHERE id = $2 AND situacao = 'aberta' RETURNING id",
-      [sessao.sub, id],
-    );
-    if (!ok) throw new ErroAcesso(HttpStatus.CONFLICT, 'reposicao_ja_pega', 'Outra pessoa já pegou esta reposição, ou ela já se resolveu.');
-    await this.auditoria.registrar({ autor: sessao.sub, acao: 'reposicao.pega', lojaId: sessao.loja, aparelhoId: sessao.ap, detalhes: { tarefa: id } });
-    return this.uma(sessao.loja, id);
-  }
-
   private async produto(codigo: string, executor?: Executor) {
     const { sku, eanOuSku } = interpretarCodigoLido(codigo);
     const [p] = await this.db.query<{ sku: string; nome: string; departamento: string }>(
@@ -419,9 +291,7 @@ export class TarefasService {
     const venda = enderecos.find((e) => e.tipo === 'venda');
     return {
       id: l.id,
-      tipo: l.tipo,
-      quantidade: l.quantidade,
-      caixa: l.caixa,
+      tipo: 'boa_do_dia',
       sku: l.sku,
       produto: l.nome,
       setor: l.setor,

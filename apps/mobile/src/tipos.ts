@@ -123,17 +123,14 @@ export interface LocalComQuantidade {
 
 export interface Tarefa {
   id: string;
-  /** reposicao: criada sozinha quando a gôndola fica abaixo do mínimo (Meeseeks). */
-  tipo: 'boa_do_dia' | 'reposicao';
-  quantidade: number | null;
-  caixa: string | null;
+  tipo: 'boa_do_dia';
   sku: string;
   produto: string;
   setor: string;
   dia: string;
   instrucoes: string | null;
   responsavel: { matricula: string; nome: string } | null;
-  situacao: 'aguardando_lider' | 'aberta' | 'atribuida' | 'concluida' | 'sem_produto';
+  situacao: 'aguardando_lider' | 'atribuida' | 'concluida' | 'sem_produto';
   enderecoVenda: LocalComQuantidade | null;
   estoque: LocalComQuantidade[];
 }
