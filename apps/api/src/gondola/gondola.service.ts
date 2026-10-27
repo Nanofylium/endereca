@@ -6,6 +6,7 @@ import { SessaoAtual } from '../auth/tipos';
 import { DbService } from '../db/db.service';
 import { descreverLocal } from '../etiquetas/codigos';
 import { interpretarCodigoLido } from '../produtos/indicadores';
+import { TarefasService } from '../tarefas/tarefas.service';
 import { ConferirDto, CriarTerminalDto } from './gondola.dto';
 import { hashChaveTerminal } from './terminal.guard';
 
@@ -36,6 +37,7 @@ export class GondolaService {
   constructor(
     private readonly db: DbService,
     private readonly auditoria: AuditoriaService,
+    private readonly tarefas: TarefasService,
   ) {}
 
   /** Ruas e módulos da área de venda que têm produto, para escolher a gôndola. */
@@ -172,7 +174,9 @@ export class GondolaService {
       aparelhoId: sessao.ap,
       detalhes: { sku: produto.sku, endereco, resultado: r.resultado, antes: r.antes, substituido: r.substituido?.sku ?? null },
     });
-    return { ...r, produto: { sku: produto.sku, nome: produto.nome }, endereco };
+    // Contou a frente: abaixo do mínimo o Meeseeks nasce, de volta ao mínimo ele some.
+    const meeseeks = quantidade === null ? null : await this.tarefas.invocarMeeseeks(sessao.loja, produto.sku);
+    return { ...r, produto: { sku: produto.sku, nome: produto.nome }, endereco, meeseeks };
   }
 
   /** O que o cliente vê ao passar o produto no leitor da gôndola: preço de varejo, de atacado e onde fica. */

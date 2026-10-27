@@ -1,4 +1,4 @@
-import { IsIn, IsISO8601, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsIn, IsInt, IsISO8601, IsOptional, IsString, Length, Matches, Max, Min } from 'class-validator';
 import { MATRICULA_REGEX } from '../auth/tipos';
 
 export class BoaDoDiaDto {
@@ -48,4 +48,22 @@ export class FaltaDto {
   @IsString()
   @Length(1, 500)
   observacao?: string;
+}
+
+export class LimitesDto {
+  /** EAN, SKU ou QR do produto. */
+  @IsString()
+  @Length(1, 60)
+  produto!: string;
+
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  minimo!: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  maximo?: number;
 }

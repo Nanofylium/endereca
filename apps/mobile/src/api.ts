@@ -60,6 +60,8 @@ export function criarApi(opcoes: OpcoesApi) {
     ficha: (codigoLido: string) => chamar<Ficha>('GET', `/produtos/ficha/${encodeURIComponent(codigoLido.trim())}`),
     buscar: (termo: string) => chamar<ItemBusca[]>('GET', `/produtos?q=${encodeURIComponent(termo)}`),
     minhasTarefas: () => chamar<Tarefa[]>('GET', '/tarefas/minhas'),
+    reposicoes: () => chamar<Tarefa[]>('GET', '/reposicao'),
+    pegarReposicao: (id: string) => chamar<Tarefa>('POST', `/reposicao/${encodeURIComponent(id)}/pegar`),
     concluirTarefa: (id: string, resultado: 'feito' | 'sem_produto', observacao?: string) =>
       chamar<{ tarefa: Tarefa; falta: ResultadoFalta | null }>('POST', `/tarefas/${encodeURIComponent(id)}/concluir`, { resultado, observacao }),
     registrarFalta: (produto: string) => chamar<ResultadoFalta>('POST', '/faltas', { produto }),

@@ -1,20 +1,37 @@
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Api } from '../api';
+import { Api, ErroApi } from '../api';
 import { cores } from '../tema';
 import { ResultadoFalta, Tarefa } from '../tipos';
 import { AvisoFalta } from './AvisoFalta';
 import { Botao } from './Botao';
 
-/** Tarefas que o líder passou para a pessoa, como a Boa do Dia. */
+/** Tarefas da pessoa (Boa do Dia e reposições que ela pegou) e as reposições abertas do setor. */
 export function MinhasTarefas(props: { api: Api; aoErro: (e: unknown) => void }) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [abertas, setAbertas] = useState<Tarefa[]>([]);
   const [faltas, setFaltas] = useState<Record<string, ResultadoFalta>>({});
   const [enviando, setEnviando] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     props.api.minhasTarefas().then(setTarefas).catch(props.aoErro);
+    props.api
+      .reposicoes()
+      .then((r) => setAbertas(r.filter((t) => t.situacao === 'aberta')))
+      .catch(props.aoErro);
   }, [props.api]);
+
+  async function pegar(t: Tarefa) {
+    setEnviando(t.id);
+    try {
+      await props.api.pegarReposicao(t.id);
+    } catch (e) {
+      if (!(e instanceof ErroApi && e.motivo === 'reposicao_ja_pega')) props.aoErro(e);
+    } finally {
+      setEnviando(null);
+      carregar();
+    }
+  }
 
   useEffect(carregar, [carregar]);
 
@@ -31,13 +48,26 @@ export function MinhasTarefas(props: { api: Api; aoErro: (e: unknown) => void })
     }
   }
 
-  if (!tarefas.length) return null;
+  if (!tarefas.length && !abertas.length) return null;
   return (
     <View style={{ gap: 10 }}>
-      <Text style={estilos.rotulo}>Suas tarefas de hoje</Text>
+      {abertas.length ? (
+        <>
+          <Text style={estilos.rotulo}>Reposições abertas no seu setor</Text>
+          {abertas.map((t) => (
+            <View key={t.id} style={[estilos.cartao, { borderColor: cores.confirmar }]}>
+              <Text style={[estilos.selo, { backgroundColor: cores.confirmar }]}>REPOR AGORA</Text>
+              <Text style={estilos.produto}>{t.produto}</Text>
+              {t.instrucoes ? <Text style={estilos.texto}>{t.instrucoes}</Text> : null}
+              <Botao titulo="Eu faço" variante="confirmar" carregando={enviando === t.id} onPress={() => pegar(t)} />
+            </View>
+          ))}
+        </>
+      ) : null}
+      {tarefas.length ? <Text style={estilos.rotulo}>Suas tarefas de hoje</Text> : null}
       {tarefas.map((t) => (
         <View key={t.id} style={[estilos.cartao, t.situacao !== 'atribuida' && { opacity: 0.85 }]}>
-          <Text style={estilos.selo}>BOA DO DIA</Text>
+          <Text style={estilos.selo}>{t.tipo === 'reposicao' ? `REPOR ${t.quantidade ?? ''} UN.`.trim() : 'BOA DO DIA'}</Text>
           <Text style={estilos.produto}>{t.produto}</Text>
           {t.enderecoVenda ? <Text style={estilos.texto}>Gôndola: {t.enderecoVenda.descricao}</Text> : null}
           {t.estoque[0] ? (
