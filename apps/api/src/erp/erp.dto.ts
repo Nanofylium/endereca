@@ -37,6 +37,18 @@ export class ProdutoLojaErpDto {
   @Max(99999999)
   precoEmbalagem?: number;
 
+  /** Preço de atacado, que vale a partir de quantidadeAtacado unidades. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(99999999)
+  precoAtacado?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2)
+  quantidadeAtacado?: number;
+
   @IsOptional()
   @IsDateString({ strict: true })
   ultimaCompraEm?: string;

@@ -70,6 +70,16 @@ Ninguém cadastra produto à mão: o catálogo vem do ERP por `POST /erp/produto
 
 O código impresso embaixo do QR usa só letras e números fáceis de ler (sem 0, O, 1, I e L), para digitar quando a etiqueta estiver danificada.
 
+## Gôndola sem etiqueta de prateleira
+
+A etiqueta de papel da prateleira some. O que ela dizia passa a morar no Endereça:
+
+- **Para a equipe**: a tela "Gôndola sem etiqueta" do app mostra, módulo por módulo, o produto de cada nível e posição, com o preço de varejo e o de atacado (`GET /gondola/ruas`, `GET /gondola?rua=&modulo=`). Para conferir ou mudar um produto de lugar, o repositor informa o nível e bipa o código de barras da própria embalagem (`POST /gondola/conferir`). Se outro produto ocupava a posição, o app pergunta se ele saiu dali antes de trocar. Produto sem conferência há mais de 30 dias aparece marcado para conferir de novo.
+- **Para o cliente**: leitores de preço na área de venda (`GET /consulta/:codigo`, cabeçalho `x-terminal-chave`) mostram nome, preço de varejo, preço de atacado a partir de N unidades, preço da embalagem e onde o produto fica. O gerente gera e revoga a chave de cada leitor (`/gondola/terminais`); no banco fica só o hash.
+- **Do ERP**: `precoAtacado` e `quantidadeAtacado` entram em `lojas[]` de `POST /erp/produtos`.
+
+A lei de preços (Lei 10.962/2004 e Decreto 5.903/2006) aceita o código de barras no lugar do preço na prateleira desde que haja leitores para o consumidor espalhados pela loja, a uma distância curta de qualquer produto. A quantidade e a posição dos leitores precisam ser confirmadas com o jurídico antes de tirar as etiquetas de uma loja.
+
 ## Boa do Dia e produto em falta
 
 O gerente operacional escolhe o produto da Boa do Dia e o setor. O líder do setor recebe o aviso no painel e escolhe quem da equipe vai preparar; a pessoa vê a tarefa na tela inicial do app, com o endereço da gôndola e onde buscar no estoque, e marca "Feito" ou "Sem produto".

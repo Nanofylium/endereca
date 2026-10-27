@@ -1,4 +1,4 @@
-import { EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, RespostaAcesso, ResultadoFalta, Tarefa } from './tipos';
+import { Conferencia, EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, ModuloGondola, RespostaAcesso, ResultadoFalta, Tarefa } from './tipos';
 
 export class ErroApi extends Error {
   constructor(
@@ -67,6 +67,11 @@ export function criarApi(opcoes: OpcoesApi) {
     guardar: (volume: string, endereco: string) =>
       chamar<{ volume: EtiquetaVolume; movido: boolean }>('POST', '/etiquetas/guardar', { volume: volume.trim(), endereco: endereco.trim() }),
     baixarVolume: (volume: string) => chamar<{ volume: EtiquetaVolume }>('POST', '/etiquetas/baixar', { volume: volume.trim() }),
+    ruasGondola: () => chamar<{ rua: string; modulo: string | null; produtos: number }[]>('GET', '/gondola/ruas'),
+    moduloGondola: (rua: string, modulo: string | null) =>
+      chamar<ModuloGondola>('GET', `/gondola?rua=${encodeURIComponent(rua)}${modulo ? `&modulo=${encodeURIComponent(modulo)}` : ''}`),
+    conferirNaGondola: (dados: { produto: string; rua: string; modulo?: string; nivel?: string; posicao?: string; quantidade?: number; substituir?: boolean }) =>
+      chamar<Conferencia>('POST', '/gondola/conferir', dados),
   };
 }
 

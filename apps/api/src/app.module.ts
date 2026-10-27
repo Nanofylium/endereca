@@ -7,6 +7,7 @@ import { DbModule } from './db/db.module';
 import { ErpModule } from './erp/erp.module';
 import { EtiquetasModule } from './etiquetas/etiquetas.module';
 import { GerenteModule } from './gerente/gerente.module';
+import { GondolaModule } from './gondola/gondola.module';
 import { LiderModule } from './lider/lider.module';
 import { ProdutosModule } from './produtos/produtos.module';
 import { RhModule } from './rh/rh.module';
@@ -17,7 +18,7 @@ export class AppModule {
   static com(config: Config): DynamicModule {
     return {
       module: AppModule,
-      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule, TarefasModule],
+      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule, TarefasModule, GondolaModule],
     };
   }
 }

@@ -142,3 +142,35 @@ export interface ResultadoFalta {
   estoque: LocalComQuantidade[];
   mensagem: string;
 }
+
+export interface ProdutoNaGondola {
+  sku: string;
+  ean: string | null;
+  nome: string;
+  posicao: string | null;
+  quantidade: number | null;
+  unidadesEmbalagem: number | null;
+  precoUnidade: number | null;
+  precoAtacado: number | null;
+  quantidadeAtacado: number | null;
+  precoEmbalagem: number | null;
+  confirmadoEm: string | null;
+  confirmadoPor: string | null;
+  /** Ninguém conferiu este produto na prateleira há mais de 30 dias. */
+  conferirDeNovo: boolean;
+}
+
+/** Planograma digital de um módulo da área de venda, no lugar das etiquetas de prateleira. */
+export interface ModuloGondola {
+  rua: string;
+  modulo: string | null;
+  niveis: { nivel: string | null; produtos: ProdutoNaGondola[] }[];
+}
+
+export interface Conferencia {
+  resultado: 'confirmado' | 'movido' | 'novo';
+  antes: string | null;
+  substituido: { sku: string; nome: string } | null;
+  produto: { sku: string; nome: string };
+  endereco: string;
+}

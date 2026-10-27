@@ -12,6 +12,7 @@ export function Inicio(props: {
   colaborador: Colaborador;
   aoEscanear: () => void;
   aoGuardar: () => void;
+  aoGondola: () => void;
   aoAbrirProduto: (codigo: string) => void;
   aoSair: () => void;
   aoErro: (e: unknown) => void;
@@ -62,6 +63,7 @@ export function Inicio(props: {
             <MinhasTarefas api={props.api} aoErro={props.aoErro} />
             <Botao titulo="Escanear QR Code ou código de barras" onPress={props.aoEscanear} />
             <Botao titulo="Guardar caixa ou palete" variante="escuro" onPress={props.aoGuardar} />
+            <Botao titulo="Gôndola sem etiqueta" variante="contorno" onPress={props.aoGondola} />
             <View style={{ gap: 8 }}>
               <Text style={estilos.rotulo}>Ou busque por nome, marca, SKU ou EAN</Text>
               <TextInput

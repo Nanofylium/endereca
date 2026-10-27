@@ -58,11 +58,21 @@ export class ErpService {
         // Loja que o RH ainda não sincronizou fica de fora em vez de derrubar a importação inteira.
         for (const l of p.lojas ?? []) {
           await this.db.query(
-            `INSERT INTO produto_loja (sku, loja_id, preco_unidade, preco_embalagem, ultima_compra_em, ultima_compra_quantidade)
-             SELECT $1, id, $3, $4, $5, $6 FROM lojas WHERE id = $2
+            `INSERT INTO produto_loja (sku, loja_id, preco_unidade, preco_embalagem, ultima_compra_em, ultima_compra_quantidade, preco_atacado, quantidade_atacado)
+             SELECT $1, id, $3, $4, $5, $6, $7, $8 FROM lojas WHERE id = $2
              ON CONFLICT (sku, loja_id) DO UPDATE SET preco_unidade = EXCLUDED.preco_unidade, preco_embalagem = EXCLUDED.preco_embalagem,
-               ultima_compra_em = EXCLUDED.ultima_compra_em, ultima_compra_quantidade = EXCLUDED.ultima_compra_quantidade, atualizado_em = now()`,
-            [p.sku, l.lojaId, l.precoUnidade ?? null, l.precoEmbalagem ?? null, l.ultimaCompraEm ?? null, l.ultimaCompraQuantidade ?? null],
+               ultima_compra_em = EXCLUDED.ultima_compra_em, ultima_compra_quantidade = EXCLUDED.ultima_compra_quantidade,
+               preco_atacado = EXCLUDED.preco_atacado, quantidade_atacado = EXCLUDED.quantidade_atacado, atualizado_em = now()`,
+            [
+              p.sku,
+              l.lojaId,
+              l.precoUnidade ?? null,
+              l.precoEmbalagem ?? null,
+              l.ultimaCompraEm ?? null,
+              l.ultimaCompraQuantidade ?? null,
+              l.precoAtacado ?? null,
+              l.quantidadeAtacado ?? null,
+            ],
             cliente,
           );
         }
