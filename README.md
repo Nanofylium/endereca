@@ -80,6 +80,15 @@ A etiqueta de papel da prateleira some. O que ela dizia passa a morar no Endere�
 
 A lei de preços (Lei 10.962/2004 e Decreto 5.903/2006) aceita o código de barras no lugar do preço na prateleira desde que haja leitores para o consumidor espalhados pela loja, a uma distância curta de qualquer produto. A quantidade e a posição dos leitores precisam ser confirmadas com o jurídico antes de tirar as etiquetas de uma loja.
 
+## Treinamento do repositor
+
+Quem está chegando aprende no próprio celular de trabalho, com a loja de verdade, e vê para onde a função leva.
+
+- **Lições curtas** (`GET /treino`, `GET /treino/licoes/:id`, `POST /treino/licoes/:id`): o repositor é quem faz a loja vender, como ler um endereço, os lugares do estoque, a validade primeiro, o celular de trabalho, a segurança e a gôndola sem etiqueta. Cada lição tem perguntas, e a correção explica cada resposta. Com 70% de acerto a lição fica concluída; vale a melhor tentativa. A resposta certa nunca vai para o app antes da correção.
+- **Desafio "ache o produto"** (`GET/POST /treino/desafio`): mostra um produto de verdade da loja e quatro endereços da área de venda. Cada acerto vale 5 pontos, até 10 acertos por dia.
+- **Níveis e carreira**: Aprendiz, Repositor, Repositor de referência e Pronto para liderar, com a barra do próximo nível. A trilha mostra o caminho repositor → líder de setor → gerente operacional. Dá para chegar a Repositor só com as lições; os níveis seguintes pedem prática no desafio. Os níveis são um exemplo, e cada loja pode ajustar em `apps/api/src/treino/conteudo.ts`.
+- **Acompanhamento** (`GET /treino/equipe`): o líder vê o treino da própria equipe no painel, em "Treinamento"; o gerente vê a loja toda.
+
 ## Boa do Dia e produto em falta
 
 O gerente operacional escolhe o produto da Boa do Dia e o setor. O líder do setor recebe o aviso no painel e escolhe quem da equipe vai preparar; a pessoa vê a tarefa na tela inicial do app, com o endereço da gôndola e onde buscar no estoque, e marca "Feito" ou "Sem produto".

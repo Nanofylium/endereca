@@ -10,6 +10,7 @@ import {
   NovoLocal,
   NovoRecebimento,
   ProdutoEmAlerta,
+  ProgressoTreino,
   RespostaAcesso,
   ResumoSetor,
   Tarefa,
@@ -88,6 +89,7 @@ export function criarApi(opcoes: OpcoesApi) {
     enviarBoaDoDia: (dados: NovaBoaDoDia) => chamar<Tarefa>('POST', '/tarefas/boa-do-dia', dados),
     atribuirTarefa: (id: string, matricula: string) => chamar<Tarefa>('POST', `/tarefas/${encodeURIComponent(id)}/atribuir`, { matricula }),
     faltas: () => chamar<Falta[]>('GET', '/faltas'),
+    treinoEquipe: () => chamar<ProgressoTreino[]>('GET', '/treino/equipe'),
     resolverFalta: (id: string) => chamar<{ id: string; resolvida: boolean }>('POST', `/faltas/${encodeURIComponent(id)}/resolver`),
     volumesAguardando: () => chamar<EtiquetaVolume[]>('GET', '/etiquetas/volumes/aguardando'),
   };

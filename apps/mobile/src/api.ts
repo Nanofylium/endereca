@@ -1,4 +1,4 @@
-import { Conferencia, EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, ModuloGondola, RespostaAcesso, ResultadoFalta, Tarefa } from './tipos';
+import { Conferencia, DesafioTreino, EtiquetaVolume, Ficha, ItemBusca, LeituraEtiqueta, LicaoTreino, ModuloGondola, RespostaAcesso, ResultadoDesafio, ResultadoFalta, ResultadoLicao, ResumoTreino, Tarefa } from './tipos';
 
 export class ErroApi extends Error {
   constructor(
@@ -67,6 +67,11 @@ export function criarApi(opcoes: OpcoesApi) {
     guardar: (volume: string, endereco: string) =>
       chamar<{ volume: EtiquetaVolume; movido: boolean }>('POST', '/etiquetas/guardar', { volume: volume.trim(), endereco: endereco.trim() }),
     baixarVolume: (volume: string) => chamar<{ volume: EtiquetaVolume }>('POST', '/etiquetas/baixar', { volume: volume.trim() }),
+    treino: () => chamar<ResumoTreino>('GET', '/treino'),
+    licao: (id: string) => chamar<LicaoTreino>('GET', `/treino/licoes/${encodeURIComponent(id)}`),
+    responderLicao: (id: string, respostas: number[]) => chamar<ResultadoLicao>('POST', `/treino/licoes/${encodeURIComponent(id)}`, { respostas }),
+    desafio: () => chamar<DesafioTreino>('GET', '/treino/desafio'),
+    responderDesafio: (sku: string, resposta: string) => chamar<ResultadoDesafio>('POST', '/treino/desafio', { sku, resposta }),
     ruasGondola: () => chamar<{ rua: string; modulo: string | null; produtos: number }[]>('GET', '/gondola/ruas'),
     moduloGondola: (rua: string, modulo: string | null) =>
       chamar<ModuloGondola>('GET', `/gondola?rua=${encodeURIComponent(rua)}${modulo ? `&modulo=${encodeURIComponent(modulo)}` : ''}`),

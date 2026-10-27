@@ -152,3 +152,15 @@ export interface Falta {
   estoque: number;
   observacao: string | null;
 }
+
+/** Progresso de um repositor no treinamento. */
+export interface ProgressoTreino {
+  matricula: string;
+  nome: string;
+  setor: string | null;
+  pontos: number;
+  nivel: string;
+  licoesConcluidas: number;
+  licoesTotal: number;
+  ultimaAtividade: string | null;
+}

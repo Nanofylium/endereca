@@ -174,3 +174,53 @@ export interface Conferencia {
   produto: { sku: string; nome: string };
   endereco: string;
 }
+
+export interface NivelTreino {
+  atual: { nome: string; apartir: number; descricao: string };
+  proximo: { nome: string; apartir: number; descricao: string } | null;
+  faltam: number;
+}
+
+export interface ResumoTreino {
+  pontos: number;
+  nivel: NivelTreino;
+  licoes: { id: string; titulo: string; resumo: string; minutos: number; perguntas: number; acertos: number | null; concluida: boolean }[];
+  desafiosHoje: { feitos: number; acertos: number };
+  carreira: { cargo: string; foco: string }[];
+}
+
+export interface LicaoTreino {
+  id: string;
+  titulo: string;
+  resumo: string;
+  minutos: number;
+  topicos: string[];
+  perguntas: { pergunta: string; opcoes: string[] }[];
+}
+
+export interface ResultadoLicao {
+  acertos: number;
+  total: number;
+  aprovado: boolean;
+  correcoes: { acertou: boolean; correta: number; explicacao: string }[];
+  pontos: number;
+  ganhou: number;
+  nivel: NivelTreino;
+  subiuDeNivel: string | null;
+}
+
+export interface DesafioTreino {
+  sku: string;
+  nome: string;
+  ean: string | null;
+  opcoes: string[];
+}
+
+export interface ResultadoDesafio {
+  acertou: boolean;
+  correta: string;
+  pontos: number;
+  ganhou: number;
+  nivel: NivelTreino;
+  subiuDeNivel: string | null;
+}
