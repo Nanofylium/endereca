@@ -53,7 +53,9 @@ O primeiro gestor de uma loja nova recebe o código pela TI, direto no servidor:
 | `GET /produtos?q=` | Busca por nome, marca, SKU ou EAN |
 | `GET /produtos/ficha/:codigo` | Ficha completa a partir do QR (`ENDERECA:P:<sku>`), EAN ou SKU |
 
-A ficha traz o endereço R- na área de venda, a quantidade na gôndola, os endereços de estoque, os dias sem venda, a apreciação do público (nota de 0 a 5), as vendas dos últimos 7 dias, a previsão de ruptura e o lote com validade e fornecedor.
+A ficha traz o endereço R- na área de venda, a quantidade na gôndola, os endereços de estoque, os dias sem venda, a apreciação do público (nota de 0 a 5), as vendas dos últimos 7 dias, a previsão de ruptura e o lote com validade e fornecedor. Também mostra a leitura (QR, código de barras ou digitado, quantas vezes foi bipado no dia e quem bipou antes), o estoque total em unidades e embalagens, os locais vinculados, o preço da embalagem e da unidade, a classe do produto, o código interno, o setor SAVE, lastro e altura do palete, a vida útil, a idade do estoque (há quantos dias chegou a caixa mais antiga), a última compra, a última venda e os conjuntos de que o produto faz parte.
+
+O ERP manda esses dados em `POST /erp/produtos`: `codigoInterno`, `classe`, `setorSave`, `unidadesEmbalagem`, `lastro`, `altura`, `vidaUtilDias`, `conjuntos` (`codigo`, `nome`, `quantidade`) e, por loja, `lojas` (`lojaId`, `precoUnidade`, `precoEmbalagem`, `ultimaCompraEm`, `ultimaCompraQuantidade`).
 
 ## Etiquetas e cadastro dos itens
 
@@ -67,6 +69,34 @@ Ninguém cadastra produto à mão: o catálogo vem do ERP por `POST /erp/produto
 - **Baixa**: quando a caixa acaba, o repositor bipa a etiqueta e toca em "A caixa acabou". A quantidade sai do endereço e a caixa some da ficha.
 
 O código impresso embaixo do QR usa só letras e números fáceis de ler (sem 0, O, 1, I e L), para digitar quando a etiqueta estiver danificada.
+
+## Gôndola sem etiqueta de prateleira
+
+A etiqueta de papel da prateleira some. O que ela dizia passa a morar no Endereça:
+
+- **Para a equipe**: a tela "Gôndola sem etiqueta" do app mostra, módulo por módulo, o produto de cada nível e posição, com o preço de varejo e o de atacado (`GET /gondola/ruas`, `GET /gondola?rua=&modulo=`). Para conferir ou mudar um produto de lugar, o repositor informa o nível e bipa o código de barras da própria embalagem (`POST /gondola/conferir`). Se outro produto ocupava a posição, o app pergunta se ele saiu dali antes de trocar. Produto sem conferência há mais de 30 dias aparece marcado para conferir de novo.
+- **Para o cliente**: leitores de preço na área de venda (`GET /consulta/:codigo`, cabeçalho `x-terminal-chave`) mostram nome, preço de varejo, preço de atacado a partir de N unidades, preço da embalagem e onde o produto fica. O gerente gera e revoga a chave de cada leitor (`/gondola/terminais`); no banco fica só o hash.
+- **Do ERP**: `precoAtacado` e `quantidadeAtacado` entram em `lojas[]` de `POST /erp/produtos`.
+
+A lei de preços (Lei 10.962/2004 e Decreto 5.903/2006) aceita o código de barras no lugar do preço na prateleira desde que haja leitores para o consumidor espalhados pela loja, a uma distância curta de qualquer produto. A quantidade e a posição dos leitores precisam ser confirmadas com o jurídico antes de tirar as etiquetas de uma loja.
+
+## Treinamento do repositor
+
+Quem está chegando aprende no próprio celular de trabalho, com a loja de verdade, e vê para onde a função leva.
+
+- **Lições curtas** (`GET /treino`, `GET /treino/licoes/:id`, `POST /treino/licoes/:id`): o repositor é quem faz a loja vender, como ler um endereço, os lugares do estoque, a validade primeiro, o celular de trabalho, a segurança e a gôndola sem etiqueta. Cada lição tem perguntas, e a correção explica cada resposta. Com 70% de acerto a lição fica concluída; vale a melhor tentativa. A resposta certa nunca vai para o app antes da correção.
+- **Desafio "ache o produto"** (`GET/POST /treino/desafio`): mostra um produto de verdade da loja e quatro endereços da área de venda. Cada acerto vale 5 pontos, até 10 acertos por dia.
+- **Níveis e carreira**: Aprendiz, Repositor, Repositor de referência e Pronto para liderar, com a barra do próximo nível. A trilha mostra o caminho repositor → líder de setor → gerente operacional. Dá para chegar a Repositor só com as lições; os níveis seguintes pedem prática no desafio. Os níveis são um exemplo, e cada loja pode ajustar em `apps/api/src/treino/conteudo.ts`.
+- **Acompanhamento** (`GET /treino/equipe`): o líder vê o treino da própria equipe no painel, em "Treinamento"; o gerente vê a loja toda.
+
+## Alerta de vencimento
+
+O líder descobre o lote que vai vencer enquanto ainda dá para vender, e não no dia de jogar fora.
+
+- **O que deve sobrar** (`GET /validade/alertas?dias=45`): pega as caixas etiquetadas com validade dentro da janela (até 120 dias), agrupa por lote e projeta a venda pela média dos últimos 7 dias. A gôndola vende primeiro e os lotes saem pela validade, o mais próximo de vencer antes. Para cada lote mostra quanto vende até vencer, quanto deve sobrar, o valor em risco (sobra × preço da unidade), o fornecedor e onde estão as caixas.
+- **O que fazer**: vencido, retirar da venda; até 7 dias com sobra, rebaixar o preço; até 30 dias, destacar (ponta de gôndola ou Boa do Dia); produto parado com fornecedor e prazo, devolver. Se o ritmo de venda dá conta, aparece como "vende a tempo".
+- **Decisão registrada** (`POST /validade/acoes`): o líder escolhe destacar, rebaixar, devolver ou retirar, com uma observação. O lote fica marcado com quem decidiu e quando, sai do valor em risco e vai para a auditoria.
+- O líder vê só o departamento do seu setor; o gerente vê a loja toda. No painel fica em "Vencimento", com o valor em risco no topo.
 
 ## Boa do Dia e produto em falta
 
@@ -106,7 +136,7 @@ O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http:/
 
 ## Painel do líder e do gerente
 
-Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Equipe, Acessos (gerar código, tentativas recusadas, avisos), Produtos e avisos, e Etiquetas (gerar e imprimir etiquetas de endereço e de volume). O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
+Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Vencimento, Equipe, Treinamento, Acessos (gerar código, tentativas recusadas, avisos), Produtos e avisos, e Etiquetas (gerar e imprimir etiquetas de endereço e de volume). O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
 
 ```bash
 cd apps/painel

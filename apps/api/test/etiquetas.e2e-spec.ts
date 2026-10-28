@@ -67,6 +67,55 @@ describe('catálogo do ERP', () => {
     expect(rows[0].nome).toBe('Arroz tipo 1 5 kg (novo)');
   });
 
+  it('ficha mostra o cadastro completo ao bipar: preço, palete, conjuntos, compra, venda, idade e leitura', async () => {
+    await importar([
+      {
+        sku: '100245',
+        ean: '7890000000011',
+        nome: 'Arroz tipo 1 5 kg',
+        departamento: 'Mercearia',
+        codigoInterno: 'INT-55021',
+        classe: 'A',
+        setorSave: '12 Mercearia seca',
+        unidadesEmbalagem: 6,
+        lastro: 10,
+        altura: 5,
+        vidaUtilDias: 365,
+        conjuntos: [{ codigo: 'KIT-CESTA', nome: 'Cesta básica', quantidade: 1 }],
+        lojas: [
+          { lojaId: 'L1', precoUnidade: 27.9, precoEmbalagem: 159.9, ultimaCompraEm: '2026-10-20', ultimaCompraQuantidade: 300 },
+          { lojaId: 'LOJA-QUE-NAO-EXISTE', precoUnidade: 1 },
+        ],
+      },
+    ]).expect(200);
+    await pool.query(`INSERT INTO enderecos_produto (sku, loja_id, tipo, rua, quantidade, principal) VALUES
+      ('100245', 'L1', 'venda', 'R-07', 30, true), ('100245', 'L1', 'deposito', 'Rua B', 48, true)`);
+    await pool.query(`INSERT INTO vendas_diarias (sku, loja_id, dia, unidades) VALUES ('100245', 'L1', '2026-10-01', 5)`);
+    await pool.query(`INSERT INTO volumes (codigo, loja_id, sku, quantidade, recebido_por, recebido_em)
+      VALUES ('VELHA00001', 'L1', '100245', 6, '001000', now() - interval '10 days')`);
+
+    const lider = await ativo('001000');
+    await lider.get('/produtos/ficha/7890000000011').expect(200);
+    const repositor = await ativo('004512');
+    const { body } = await repositor.get(`/produtos/ficha/${encodeURIComponent('ENDERECA:P:100245')}`).expect(200);
+
+    expect(body.produto).toMatchObject({ codigoInterno: 'INT-55021', classe: 'A', setorSave: '12 Mercearia seca', unidadesEmbalagem: 6, vidaUtilDias: 365 });
+    expect(body.estoqueTotal).toEqual({ unidades: 78, gondola: 30, estoque: 48, embalagens: 13 });
+    expect(body.preco).toMatchObject({ unidade: 27.9, embalagem: 159.9 });
+    expect(body.ultimaCompra).toEqual({ data: '2026-10-20', quantidade: 300 });
+    expect(body.ultimaVenda).toBe('2026-10-01');
+    expect(body.palete).toEqual({ lastro: 10, altura: 5, caixas: 50, unidades: 300 });
+    expect(body.idadeEstoque.dias).toBeGreaterThanOrEqual(9);
+    expect(body.conjuntos).toEqual([{ codigo: 'KIT-CESTA', nome: 'Cesta básica', quantidade: 1 }]);
+    expect(body.leitura).toMatchObject({ forma: 'qr', leiturasHoje: 2, anterior: { nome: 'Marcos Teixeira' } });
+
+    // Reimportar sem conjuntos mantém os que já existem; com lista vazia, apaga.
+    await importar([{ sku: '100245', nome: 'Arroz tipo 1 5 kg', departamento: 'Mercearia' }]).expect(200);
+    expect((await pool.query('SELECT count(*)::int AS n FROM conjuntos_produto')).rows[0].n).toBe(1);
+    await importar([{ sku: '100245', nome: 'Arroz tipo 1 5 kg', departamento: 'Mercearia', conjuntos: [] }]).expect(200);
+    expect((await pool.query('SELECT count(*)::int AS n FROM conjuntos_produto')).rows[0].n).toBe(0);
+  });
+
   it('recusa chave errada', async () => {
     expect((await importar([], 'errada')).status).toBe(401);
   });

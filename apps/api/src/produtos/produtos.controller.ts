@@ -15,6 +15,6 @@ export class ProdutosController {
   /** Aceita o conteúdo do QR Code (ENDERECA:P:<sku>), o EAN ou o SKU. */
   @Get('ficha/:codigo')
   ficha(@Req() req: RequisicaoAutenticada, @Param('codigo') codigo: string) {
-    return this.produtos.ficha(req.sessao.loja, codigo);
+    return this.produtos.ficha(req.sessao.loja, req.sessao.sub, codigo);
   }
 }

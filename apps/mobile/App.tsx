@@ -8,10 +8,12 @@ import { apagarSessao, lerSessao, salvarSessao } from './src/sessaoSalva';
 import { Acesso } from './src/telas/Acesso';
 import { tipoDoCodigo } from './src/etiquetas';
 import { Ficha } from './src/telas/Ficha';
+import { Gondola } from './src/telas/Gondola';
 import { Guardar } from './src/telas/Guardar';
 import { Inicio } from './src/telas/Inicio';
 import { Local } from './src/telas/Local';
 import { Scanner } from './src/telas/Scanner';
+import { Treino } from './src/telas/Treino';
 import { cores } from './src/tema';
 import { RespostaAcesso } from './src/tipos';
 
@@ -22,7 +24,9 @@ type Tela =
   | { nome: 'scanner' }
   | { nome: 'ficha'; codigo: string }
   | { nome: 'local'; codigo: string }
-  | { nome: 'guardar'; volume?: string };
+  | { nome: 'guardar'; volume?: string }
+  | { nome: 'gondola' }
+  | { nome: 'treino' };
 
 export default function App() {
   const [aparelhoId, setAparelhoId] = useState<string | null>(null);
@@ -97,6 +101,10 @@ export default function App() {
         />
       ) : tela.nome === 'guardar' ? (
         <Guardar api={api} volumeInicial={tela.volume} aoVoltar={() => setTela({ nome: 'inicio' })} aoErro={tratarErro} />
+      ) : tela.nome === 'treino' ? (
+        <Treino api={api} aoVoltar={() => setTela({ nome: 'inicio' })} aoErro={tratarErro} />
+      ) : tela.nome === 'gondola' ? (
+        <Gondola api={api} aoVoltar={() => setTela({ nome: 'inicio' })} aoErro={tratarErro} />
       ) : tela.nome === 'ficha' ? (
         <Ficha api={api} codigo={tela.codigo} aoVoltar={() => setTela({ nome: 'scanner' })} aoErro={tratarErro} />
       ) : (
@@ -105,6 +113,8 @@ export default function App() {
           colaborador={sessao.colaborador}
           aoEscanear={() => setTela({ nome: 'scanner' })}
           aoGuardar={() => setTela({ nome: 'guardar' })}
+          aoGondola={() => setTela({ nome: 'gondola' })}
+          aoTreino={() => setTela({ nome: 'treino' })}
           aoAbrirProduto={(codigo) => setTela({ nome: 'ficha', codigo })}
           aoSair={sair}
           aoErro={tratarErro}

@@ -11,16 +11,20 @@ import { Equipe } from './telas/Equipe';
 import { Etiquetas } from './telas/Etiquetas';
 import { Login } from './telas/Login';
 import { Setores } from './telas/Setores';
+import { Treinamento } from './telas/Treinamento';
+import { Vencimento } from './telas/Vencimento';
 import { Papel, RespostaAcesso } from './tipos';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-type Aba = 'setores' | 'boa' | 'equipe' | 'acessos' | 'alertas' | 'etiquetas' | 'aparelhos';
+type Aba = 'setores' | 'boa' | 'vencimento' | 'equipe' | 'treino' | 'acessos' | 'alertas' | 'etiquetas' | 'aparelhos';
 
 const ABAS: { id: Aba; rotulo: string; titulo: string; papeis: Papel[] }[] = [
   { id: 'setores', rotulo: 'Setores', titulo: 'Visão dos setores', papeis: ['gerente', 'admin'] },
   { id: 'boa', rotulo: 'Boa do Dia e faltas', titulo: 'Boa do Dia e faltas na gôndola', papeis: ['lider', 'gerente', 'admin'] },
+  { id: 'vencimento', rotulo: 'Vencimento', titulo: 'Lotes perto de vencer', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'equipe', rotulo: 'Equipe', titulo: 'Equipe', papeis: ['lider', 'gerente', 'admin'] },
+  { id: 'treino', rotulo: 'Treinamento', titulo: 'Treinamento dos repositores', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'acessos', rotulo: 'Acessos', titulo: 'Acessos e segurança', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'alertas', rotulo: 'Produtos e avisos', titulo: 'Produtos e avisos', papeis: ['lider', 'gerente', 'admin'] },
   { id: 'etiquetas', rotulo: 'Etiquetas', titulo: 'Etiquetas de endereço e de volume', papeis: ['lider', 'gerente', 'admin'] },
@@ -97,7 +101,9 @@ export function App() {
         </div>
         {atual.id === 'setores' ? <Setores ctx={ctx} /> : null}
         {atual.id === 'boa' ? <BoaDoDia ctx={ctx} /> : null}
+        {atual.id === 'vencimento' ? <Vencimento ctx={ctx} /> : null}
         {atual.id === 'equipe' ? <Equipe ctx={ctx} /> : null}
+        {atual.id === 'treino' ? <Treinamento ctx={ctx} /> : null}
         {atual.id === 'acessos' ? <Acessos ctx={ctx} /> : null}
         {atual.id === 'alertas' ? <Alertas ctx={ctx} /> : null}
         {atual.id === 'etiquetas' ? <Etiquetas ctx={ctx} /> : null}

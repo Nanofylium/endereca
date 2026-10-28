@@ -152,3 +152,43 @@ export interface Falta {
   estoque: number;
   observacao: string | null;
 }
+
+/** Progresso de um repositor no treinamento. */
+export interface ProgressoTreino {
+  matricula: string;
+  nome: string;
+  setor: string | null;
+  pontos: number;
+  nivel: string;
+  licoesConcluidas: number;
+  licoesTotal: number;
+  ultimaAtividade: string | null;
+}
+
+export type AcaoVencimento = 'destacar' | 'rebaixar' | 'devolver' | 'retirar';
+
+/** Lote perto de vencer, com o que deve sobrar pelo ritmo de venda. */
+export interface AlertaVencimento {
+  sku: string;
+  nome: string;
+  departamento: string;
+  lote: string;
+  validade: string;
+  diasParaVencer: number;
+  quantidade: number;
+  vendaMediaDia: number;
+  vendeAte: number;
+  sobra: number;
+  valorEmRisco: number | null;
+  fornecedor: string | null;
+  sugestao: AcaoVencimento | 'vende_a_tempo';
+  caixas: { codigo: string; quantidade: number; local: string }[];
+  tratado: { acao: AcaoVencimento; observacao: string | null; por: string; em: string } | null;
+}
+
+export interface AlertasVencimento {
+  hoje: string;
+  janelaDias: number;
+  valorEmRisco: number;
+  alertas: AlertaVencimento[];
+}
