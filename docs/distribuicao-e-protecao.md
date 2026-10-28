@@ -5,7 +5,7 @@
 | Peça | O que é entregue | O que fica com o autor |
 | --- | --- | --- |
 | API (`apps/api`) | Nada. Roda no servidor do autor e a loja só acessa pela internet. | Todo o código, o banco e as chaves. |
-| App do repositor (`apps/mobile`) | Um APK assinado. | O código-fonte. |
+| App do repositor (`apps/mobile`) | Um APK assinado, ou o app na Google Play e no TestFlight. | O código-fonte. |
 | Painel (`apps/painel`) | Um instalador `.exe` para Windows, ou o endereço web do painel. | O código-fonte. |
 
 Nenhum código-fonte é enviado ao Atacadão. O repositório no GitHub está privado.
@@ -60,6 +60,8 @@ npx eas-cli build --platform android --profile producao
 ```
 
 O EAS guarda a keystore e entrega o APK. Defina `ENDERECA_API_URL` nas variáveis de ambiente do projeto no EAS.
+
+Para a Google Play e o iPhone (TestFlight, App Store, Apple Business Manager) use o perfil `loja` e o workflow **Lojas**. O passo a passo, com as contas da Apple, da Google e do Expo, está em [instalar-no-celular.md](instalar-no-celular.md).
 
 ### No computador
 

@@ -2,7 +2,7 @@
 
 App interno para lojas de atacarejo: o repositor escaneia o QR Code ou o código de barras e descobre onde o produto está, na área de venda (endereços R-) e no estoque (depósito, caixaria, gaveta, intermédio, aéreo). O líder acompanha a equipe do seu setor e o gerente operacional acompanha a loja inteira.
 
-O repositório tem a API (`apps/api`), o app do repositor para Android (`apps/mobile`) e o painel web do líder e do gerente (`apps/painel`).
+O repositório tem a API (`apps/api`), o app do repositor para Android e iPhone (`apps/mobile`) e o painel web do líder e do gerente (`apps/painel`).
 
 ## Como o acesso funciona
 

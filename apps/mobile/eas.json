@@ -1,16 +1,35 @@
 {
   "cli": {
-    "version": ">= 13.0.0",
-    "appVersionSource": "local"
+    "version": ">= 14.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "producao": {
       "distribution": "internal",
+      "environment": "production",
       "android": {
         "buildType": "apk"
       },
       "env": {
         "ENDERECA_DISTRIBUICAO": "1"
+      }
+    },
+    "loja": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "ENDERECA_DISTRIBUICAO": "1"
+      }
+    }
+  },
+  "submit": {
+    "loja": {
+      "android": {
+        "track": "internal"
       }
     }
   }

@@ -5,20 +5,38 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icone.png",
     "jsEngine": "hermes",
+    "ios": {
+      "bundleIdentifier": "br.com.endereca.repositor",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
     "android": {
       "package": "br.com.endereca.repositor",
       "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icone-adaptativo.png",
+        "backgroundColor": "#0B3D2E"
+      },
       "allowBackup": false,
       "permissions": [
         "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "O Endereça usa a câmera para ler o QR Code e o código de barras dos produtos."
+          "cameraPermission": "O Endereça usa a câmera para ler o QR Code e o código de barras dos produtos.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       "expo-secure-store",
