@@ -17,6 +17,8 @@ on:
       - apps/painel/src-tauri/**
       - apps/mobile/app.config.ts
       - apps/mobile/eas.json
+      - apps/mobile/app.json
+      - apps/mobile/plugins/**
 
 permissions:
   contents: read
@@ -46,9 +48,8 @@ jobs:
       - run: node ../../scripts/licencas.mjs .
       - run: npx expo prebuild --platform android --no-install
       - name: Avisos de terceiros dentro do APK
-        run: |
-          mkdir -p android/app/src/main/assets
-          node ../../scripts/licencas.mjs . --avisos android/app/src/main/assets/AVISOS_DE_TERCEIROS.txt
+        # Gerado no prebuild pelo plugin plugins/avisos-de-terceiros.js; aqui só confere.
+        run: test -s android/app/src/main/assets/AVISOS_DE_TERCEIROS.txt
       - name: Keystore de assinatura
         id: keystore
         env:

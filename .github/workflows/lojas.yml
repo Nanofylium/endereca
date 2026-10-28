@@ -1,0 +1,56 @@
+name: Lojas
+
+# Gera o app do repositor nos servidores do Expo (EAS) e, se pedido, envia para a
+# Google Play (teste interno) e para o TestFlight. O build de iPhone precisa de um Mac,
+# e o EAS fornece um, então não é preciso ter Mac.
+#
+# Configuração do repositório (Settings > Secrets and variables > Actions):
+#   Segredo  EXPO_TOKEN       token de acesso da conta Expo (expo.dev > Access tokens)
+#   Variável EAS_PROJECT_ID   id do projeto criado com "eas init"
+# O endereço da API (ENDERECA_API_URL) e as credenciais da Apple e da Google ficam no EAS,
+# nunca no repositório. Passo a passo em docs/instalar-no-celular.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      plataforma:
+        description: Celulares
+        type: choice
+        options: [all, android, ios]
+        default: all
+      enviar:
+        description: Enviar para a Google Play (teste interno) e para o TestFlight
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  eas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+    steps:
+      - name: Confere a configuração
+        working-directory: .
+        run: |
+          [ -n "$EXPO_TOKEN" ] || { echo "::error::Falta o segredo EXPO_TOKEN. Veja docs/instalar-no-celular.md"; exit 1; }
+          [ -n "$EAS_PROJECT_ID" ] || { echo "::error::Falta a variável EAS_PROJECT_ID. Veja docs/instalar-no-celular.md"; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - run: node ../../scripts/licencas.mjs .
+      # O build roda no EAS; o workflow só dispara e termina sem esperar.
+      - run: eas build --profile loja --platform ${{ inputs.plataforma }} --non-interactive --no-wait ${{ inputs.enviar && '--auto-submit' || '' }}
