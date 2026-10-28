@@ -60,3 +60,18 @@ export function candidatosTarefa(equipe: MembroEquipe[], setor: string, papel: P
   const doSetor = executam.filter((m) => mesmo(m.setor));
   return doSetor.length ? doSetor : executam;
 }
+
+const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+export const reais = (valor: number) => moeda.format(valor);
+
+/** "venceu há 2 dias", "vence hoje", "vence amanhã", "vence em 12 dias". */
+export function textoVencimento(dias: number): string {
+  if (dias < -1) return `venceu há ${-dias} dias`;
+  if (dias === -1) return 'venceu ontem';
+  if (dias === 0) return 'vence hoje';
+  if (dias === 1) return 'vence amanhã';
+  return `vence em ${dias} dias`;
+}
+
+/** 2026-11-02 vira 02/11. */
+export const diaMes = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;

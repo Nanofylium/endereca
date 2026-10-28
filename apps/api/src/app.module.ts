@@ -13,13 +13,14 @@ import { ProdutosModule } from './produtos/produtos.module';
 import { RhModule } from './rh/rh.module';
 import { TarefasModule } from './tarefas/tarefas.module';
 import { TreinoModule } from './treino/treino.module';
+import { ValidadeModule } from './validade/validade.module';
 
 @Module({})
 export class AppModule {
   static com(config: Config): DynamicModule {
     return {
       module: AppModule,
-      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule, TarefasModule, GondolaModule, TreinoModule],
+      imports: [ConfigModule.com(config), DbModule, AuditoriaModule, AcessoModule, RhModule, LiderModule, GerenteModule, ProdutosModule, ErpModule, EtiquetasModule, TarefasModule, GondolaModule, TreinoModule, ValidadeModule],
     };
   }
 }

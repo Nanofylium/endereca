@@ -1,4 +1,6 @@
 import {
+  AcaoVencimento,
+  AlertasVencimento,
   Aparelho,
   Aviso,
   CodigoGerado,
@@ -91,6 +93,9 @@ export function criarApi(opcoes: OpcoesApi) {
     faltas: () => chamar<Falta[]>('GET', '/faltas'),
     treinoEquipe: () => chamar<ProgressoTreino[]>('GET', '/treino/equipe'),
     resolverFalta: (id: string) => chamar<{ id: string; resolvida: boolean }>('POST', `/faltas/${encodeURIComponent(id)}/resolver`),
+    alertasVencimento: (dias?: number) => chamar<AlertasVencimento>('GET', `/validade/alertas${dias ? `?dias=${dias}` : ''}`),
+    registrarAcaoVencimento: (dados: { sku: string; lote: string; validade: string; acao: AcaoVencimento; observacao?: string }) =>
+      chamar<{ id: string; acao: AcaoVencimento; em: string }>('POST', '/validade/acoes', dados),
     volumesAguardando: () => chamar<EtiquetaVolume[]>('GET', '/etiquetas/volumes/aguardando'),
   };
 }

@@ -89,6 +89,15 @@ Quem está chegando aprende no próprio celular de trabalho, com a loja de verda
 - **Níveis e carreira**: Aprendiz, Repositor, Repositor de referência e Pronto para liderar, com a barra do próximo nível. A trilha mostra o caminho repositor → líder de setor → gerente operacional. Dá para chegar a Repositor só com as lições; os níveis seguintes pedem prática no desafio. Os níveis são um exemplo, e cada loja pode ajustar em `apps/api/src/treino/conteudo.ts`.
 - **Acompanhamento** (`GET /treino/equipe`): o líder vê o treino da própria equipe no painel, em "Treinamento"; o gerente vê a loja toda.
 
+## Alerta de vencimento
+
+O líder descobre o lote que vai vencer enquanto ainda dá para vender, e não no dia de jogar fora.
+
+- **O que deve sobrar** (`GET /validade/alertas?dias=45`): pega as caixas etiquetadas com validade dentro da janela (até 120 dias), agrupa por lote e projeta a venda pela média dos últimos 7 dias. A gôndola vende primeiro e os lotes saem pela validade, o mais próximo de vencer antes. Para cada lote mostra quanto vende até vencer, quanto deve sobrar, o valor em risco (sobra × preço da unidade), o fornecedor e onde estão as caixas.
+- **O que fazer**: vencido, retirar da venda; até 7 dias com sobra, rebaixar o preço; até 30 dias, destacar (ponta de gôndola ou Boa do Dia); produto parado com fornecedor e prazo, devolver. Se o ritmo de venda dá conta, aparece como "vende a tempo".
+- **Decisão registrada** (`POST /validade/acoes`): o líder escolhe destacar, rebaixar, devolver ou retirar, com uma observação. O lote fica marcado com quem decidiu e quando, sai do valor em risco e vai para a auditoria.
+- O líder vê só o departamento do seu setor; o gerente vê a loja toda. No painel fica em "Vencimento", com o valor em risco no topo.
+
 ## Boa do Dia e produto em falta
 
 O gerente operacional escolhe o produto da Boa do Dia e o setor. O líder do setor recebe o aviso no painel e escolhe quem da equipe vai preparar; a pessoa vê a tarefa na tela inicial do app, com o endereço da gôndola e onde buscar no estoque, e marca "Feito" ou "Sem produto".
@@ -127,7 +136,7 @@ O endereço da API fica em `app.json`, em `expo.extra.apiUrl` (o padrão `http:/
 
 ## Painel do líder e do gerente
 
-Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Equipe, Acessos (gerar código, tentativas recusadas, avisos), Produtos e avisos, e Etiquetas (gerar e imprimir etiquetas de endereço e de volume). O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
+Feito com Vite e React, abre no navegador do computador ou do tablet. O líder vê Vencimento, Equipe, Treinamento, Acessos (gerar código, tentativas recusadas, avisos), Produtos e avisos, e Etiquetas (gerar e imprimir etiquetas de endereço e de volume). O gerente vê também Setores e Aparelhos. Repositor não entra no painel.
 
 ```bash
 cd apps/painel
